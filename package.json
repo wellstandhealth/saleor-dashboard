@@ -92,7 +92,8 @@
     "slugify": "^1.4.6",
     "tslib": "^2.4.1",
     "url-join": "^4.0.1",
-    "use-react-router": "^1.0.7"
+    "use-react-router": "^1.0.7",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
@@ -144,6 +145,7 @@
     "@types/webappsec-credential-management": "^0.5.1",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
+    "@vitejs/plugin-react-swc": "^3.2.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^27.5.1",
     "babel-loader": "^8.0.6",
@@ -172,7 +174,6 @@
     "vite-plugin-html": "^3.2.0",
     "vite-plugin-pwa": "^0.13.3",
     "vite-plugin-sentry": "^1.1.6",
-    "@vitejs/plugin-react-swc": "^3.2.0",
     "workbox-cacheable-response": "^6.1.2",
     "workbox-expiration": "^6.1.2",
     "workbox-precaching": "^6.1.2",
