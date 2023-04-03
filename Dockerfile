@@ -33,7 +33,7 @@ ENV APPS_MARKETPLACE_API_URI ${APPS_MARKETPLACE_API_URI:-https://apps.saleor.io/
 ENV APPS_TUNNEL_URL_KEYWORDS ${APPS_TUNNEL_URL_KEYWORDS}
 ENV STATIC_URL ${STATIC_URL:-/dashboard/}
 ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
-RUN npm run build
+RUN npm run build --verbose
 
 FROM nginx:stable-bullseye as runner
 WORKDIR /app
