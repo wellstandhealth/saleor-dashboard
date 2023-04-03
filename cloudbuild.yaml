@@ -2,8 +2,8 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-docker.pkg.dev/non-production-381217/wellstand-docker/saleor-dashboard:$COMMIT_SHA', '.']
     timeout: '1800s'
-  options:
-    machineType: 'N1_HIGHCPU_8'
+    options:
+      machineType: 'N1_HIGHCPU_8'
 images:
   # Push the Docker container to Container Registry
   - 'us-docker.pkg.dev/non-production-381217/wellstand-docker/saleor-dashboard:$COMMIT_SHA'
