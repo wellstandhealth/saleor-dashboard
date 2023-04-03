@@ -36,6 +36,8 @@ ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
 RUN npm run build --verbose
 
 FROM nginx:stable-bullseye as runner
+RUN apt-get update && apt-get -y upgrade
+
 WORKDIR /app
 
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
