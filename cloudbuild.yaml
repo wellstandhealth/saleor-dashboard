@@ -4,7 +4,8 @@ steps:
     timeout: '1800s'
 
 options:
-  machineType: 'E2_HIGHCPU_8'
+  pool:
+    name: 'projects/non-production-381217/locations/us-central1/workerPools/build-pool'
 
 images:
   # Push the Docker container to Container Registry
