@@ -214,7 +214,7 @@
     "jest-environment-jsdom": "^27.5.1",
     "jest-file": "^1.0.0",
     "jest-localstorage-mock": "^2.4.3",
-    "lint-staged": "^10.5.1",
+    "lint-staged": "^13.2.1",
     "mocha-junit-reporter": "^2.0.2",
     "mochawesome": "^7.0.1",
     "mochawesome-merge": "^4.2.1",
