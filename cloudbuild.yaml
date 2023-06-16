@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-docker.pkg.dev/non-production-381217/wellstand-docker/saleor-dashboard:$COMMIT_SHA', '-f', 'Dockerfile_pharmacy', '.']
+    timeout: '2400s'
+
+options:
+  pool:
+    name: 'projects/non-production-381217/locations/us-central1/workerPools/build-pool'
+
+images:
+  # Push the Docker container to Container Registry
+  - 'us-docker.pkg.dev/non-production-381217/wellstand-docker/saleor-dashboard:$COMMIT_SHA'
