@@ -11,8 +11,8 @@ export const useStyles = makeStyles(
       margin: 0,
       padding: 0,
       overflow: "hidden",
-      width: 600,
-      height: 600,
+      width: "70vw", //Default value 600
+      height: "80vh", //Default value 600
     },
   }),
   { name: "AppDialog" },
