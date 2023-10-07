@@ -1,4 +1,4 @@
-import { getAppMountUri } from "@dashboard/config";
+// @ts-strict-ignore
 import { getAppMountUriForRedirect } from "@dashboard/utils/urls";
 import { useEffect } from "react";
 import urlJoin from "url-join";
@@ -39,16 +39,7 @@ export const useAuthRedirection = () => {
   };
 
   useEffect(() => {
-    if (!shouldRedirect) {
-      return;
-    }
-
-    if (authenticated || authenticating) {
-      window.location.href = getAppMountUri();
-      return;
-    }
-
-    if (!authenticated && !authenticating) {
+    if (shouldRedirect && !authenticated && !authenticating) {
       handleAuthentication();
     }
   }, [shouldRedirect, authenticated, authenticating]);

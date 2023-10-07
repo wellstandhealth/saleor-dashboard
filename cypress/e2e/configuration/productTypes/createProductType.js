@@ -5,20 +5,13 @@ import faker from "faker";
 
 import { urlList } from "../../../fixtures/urlList";
 import { getProductType } from "../../../support/api/requests/ProductType";
-import { deleteProductsStartsWith } from "../../../support/api/utils/products/productsUtils";
 import { createProductType } from "../../../support/pages/productTypePage";
 
 describe("As an admin I want to create product types", () => {
   const startsWith = "productType";
 
-  before(() => {
-    cy.clearSessionData().loginUserViaRequest();
-    deleteProductsStartsWith(startsWith);
-  });
-
   beforeEach(() => {
-    cy.clearSessionData()
-      .loginUserViaRequest()
+    cy.loginUserViaRequest()
       .visit(urlList.productTypes)
       .expectSkeletonIsVisible();
   });

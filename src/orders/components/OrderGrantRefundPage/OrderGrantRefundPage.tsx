@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
@@ -122,6 +123,7 @@ const OrderGrantRefundPage: React.FC<OrderGrantRefundPageProps> = ({
               />
               {order?.fulfillments?.map?.(fulfillment => (
                 <ProductsCard
+                  key={fulfillment.id}
                   title={intl.formatMessage(
                     getOrderTitleMessage(fulfillment.status),
                   )}

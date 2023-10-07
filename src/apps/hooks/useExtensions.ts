@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useUserPermissions } from "@dashboard/auth/hooks/useUserPermissions";
 import {
   AppExtensionMountEnum,
@@ -20,11 +21,11 @@ export interface Extension {
   label: string;
   mount: AppExtensionMountEnum;
   url: string;
-  open(): void;
+  open: () => void;
 }
 
 export interface ExtensionWithParams extends Omit<Extension, "open"> {
-  open(params: AppDetailsUrlMountQueryParams): void;
+  open: (params: AppDetailsUrlMountQueryParams) => void;
 }
 
 export const extensionMountPoints = {
@@ -86,6 +87,13 @@ const mapToMenuItem = ({ label, id, open }: Extension) => ({
 
 export const mapToMenuItems = (extensions: ExtensionWithParams[]) =>
   extensions.map(mapToMenuItem);
+
+export const mapToMenuItemsForOrderListActions = (
+  extensions: ExtensionWithParams[],
+) =>
+  extensions.map(extension =>
+    mapToMenuItem({ ...extension, open: () => extension.open({}) }),
+  );
 
 export const mapToMenuItemsForProductOverviewActions = (
   extensions: ExtensionWithParams[],

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   extensionMountPoints,
   mapToMenuItemsForProductDetails,
@@ -42,18 +43,19 @@ import useNavigator from "@dashboard/hooks/useNavigator";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
 import { maybe } from "@dashboard/misc";
 import ProductExternalMediaDialog from "@dashboard/products/components/ProductExternalMediaDialog";
+import { ProductOrganization } from "@dashboard/products/components/ProductOrganization/ProductOrganization";
 import { defaultGraphiQLQuery } from "@dashboard/products/queries";
 import { productImageUrl, productListUrl } from "@dashboard/products/urls";
 import { ProductVariantListError } from "@dashboard/products/views/ProductUpdate/handlers/errors";
 import { UseProductUpdateHandlerError } from "@dashboard/products/views/ProductUpdate/handlers/useProductUpdateHandler";
 import { FetchMoreProps, RelayToFlat } from "@dashboard/types";
+import { Box } from "@saleor/macaw-ui/next";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import { getChoices } from "../../utils/data";
 import { ProductDetailsForm } from "../ProductDetailsForm";
 import ProductMedia from "../ProductMedia";
-import { ProductOrganization } from "../ProductOrganization";
 import ProductTaxes from "../ProductTaxes";
 import ProductVariants from "../ProductVariants";
 import ProductUpdateForm from "./form";
@@ -112,11 +114,11 @@ export interface ProductUpdatePageProps {
   onSubmit: (data: ProductUpdateSubmitData) => SubmitPromise;
   onVariantShow: (id: string) => void;
   onAttributeSelectBlur: () => void;
-  onDelete();
-  onImageReorder?(event: { oldIndex: number; newIndex: number });
-  onImageUpload(file: File);
-  onMediaUrlUpload(mediaUrl: string);
-  onSeoClick?();
+  onDelete: () => any;
+  onImageReorder?: (event: { oldIndex: number; newIndex: number }) => any;
+  onImageUpload: (file: File) => any;
+  onMediaUrlUpload: (mediaUrl: string) => any;
+  onSeoClick?: () => any;
 }
 
 export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
@@ -309,7 +311,6 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
               ...channel,
               ...listing,
               id: listing.channelId,
-              availableForPurchase: listing.availableForPurchaseDate,
               currency: channel.currencyCode,
             };
           },
@@ -343,7 +344,6 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                 errors={productErrors}
                 onChange={change}
               />
-              <CardSpacer />
               <ProductMedia
                 media={media}
                 onImageDelete={onImageDelete}
@@ -352,7 +352,6 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                 openMediaUrlModal={() => setMediaUrlModalStatus(true)}
                 getImageEditUrl={imageId => productImageUrl(productId, imageId)}
               />
-              <CardSpacer />
               {data.attributes.length > 0 && (
                 <Attributes
                   attributes={data.attributes}
@@ -372,7 +371,6 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                   richTextGetters={attributeRichTextGetters}
                 />
               )}
-              <CardSpacer />
               <ProductVariants
                 productName={product?.name}
                 errors={variantListErrors}
@@ -403,7 +401,6 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                     "Add search engine title and description to make this product easier to find",
                 })}
               />
-              <CardSpacer />
               <Metadata data={data} onChange={handlers.changeMetadata} />
             </DetailPageLayout.Content>
             <DetailPageLayout.RightSidebar>
@@ -424,20 +421,20 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                 onCategoryChange={handlers.selectCategory}
                 onCollectionChange={handlers.selectCollection}
               />
-              <CardSpacer />
               <ChannelsAvailabilityCard
                 {...availabilityCommonProps}
                 channels={listings}
               />
-              <CardSpacer />
-              <ProductTaxes
-                value={data.taxClassId}
-                disabled={disabled}
-                onChange={handlers.selectTaxClass}
-                taxClassDisplayName={selectedTaxClass}
-                taxClasses={taxClasses}
-                onFetchMore={fetchMoreTaxClasses}
-              />
+              <Box paddingBottom={52}>
+                <ProductTaxes
+                  value={data.taxClassId}
+                  disabled={disabled}
+                  onChange={handlers.selectTaxClass}
+                  taxClassDisplayName={selectedTaxClass}
+                  taxClasses={taxClasses}
+                  onFetchMore={fetchMoreTaxClasses}
+                />
+              </Box>
             </DetailPageLayout.RightSidebar>
 
             <Savebar

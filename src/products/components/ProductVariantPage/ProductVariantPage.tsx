@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   getReferenceAttributeEntityTypeFromAttribute,
   mergeAttributeValues,
@@ -117,10 +118,10 @@ interface ProductVariantPageProps {
   variantDeactivatePreoderButtonState: ConfirmButtonTransitionState;
   onVariantReorder: ReorderAction;
   onAttributeSelectBlur: () => void;
-  onDelete();
-  onSubmit(data: ProductVariantUpdateSubmitData);
-  onSetDefaultVariant();
-  onWarehouseConfigure();
+  onDelete: () => any;
+  onSubmit: (data: ProductVariantUpdateSubmitData) => any;
+  onSetDefaultVariant: () => any;
+  onWarehouseConfigure: () => any;
 }
 
 const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
@@ -219,7 +220,6 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
           {({
             change,
             data,
-            formErrors,
             validationErrors,
             isSaveDisabled,
             handlers,
@@ -320,7 +320,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                     <CardSpacer />
                     <ProductVariantPrice
                       disabled={!variant}
-                      ProductVariantChannelListings={data.channelListings.map(
+                      productVariantChannelListings={data.channelListings.map(
                         channel => ({
                           ...channel.data,
                           ...channel.value,
@@ -354,22 +354,14 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                           ...channel.value,
                         }),
                       )}
-                      onVariantChannelListingChange={handlers.changeChannels}
                       data={data}
                       disabled={loading}
                       hasVariants={true}
                       errors={errors}
-                      formErrors={formErrors}
                       stocks={data.stocks}
                       warehouses={warehouses}
                       onChange={handlers.changeStock}
                       onFormDataChange={change}
-                      onChangePreorderEndDate={handlers.changePreorderEndDate}
-                      onEndPreorderTrigger={
-                        !!variant?.preorder
-                          ? () => setIsEndPreorderModalOpened(true)
-                          : null
-                      }
                       onWarehouseStockAdd={handlers.addStock}
                       onWarehouseStockDelete={handlers.deleteStock}
                       onWarehouseConfigure={onWarehouseConfigure}

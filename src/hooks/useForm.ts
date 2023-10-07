@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   CheckIfSaveIsDisabledFnType,
   FormId,
@@ -45,6 +46,7 @@ export interface UseFormResult<TData>
   triggerChange: () => void;
   handleChange: FormChange;
   toggleValue: FormChange;
+  toggleValues: FormChange;
   errors: FormErrors<TData>;
   setError: (name: keyof TData, error: string | React.ReactNode) => void;
   clearErrors: (name?: keyof TData | Array<keyof TData>) => void;
@@ -155,6 +157,24 @@ function useForm<T extends FormData, TErrors>(
     }
   }
 
+  function toggleValues(event: ChangeEvent, cb?: () => void) {
+    const { name, value } = event.target;
+    const field = data[name as keyof T];
+
+    if (Array.isArray(field)) {
+      handleSetChanged(true);
+
+      setData({
+        ...data,
+        [name]: value,
+      });
+    }
+
+    if (typeof cb === "function") {
+      cb();
+    }
+  }
+
   const handleChange: FormChange = event => {
     change(event);
     handleSetChanged(true);
@@ -165,7 +185,6 @@ function useForm<T extends FormData, TErrors>(
 
     if (!(name in data)) {
       console.error(`Unknown form field: ${name}`);
-      return;
     } else {
       if (data[name] !== value) {
         handleSetChanged(true);
@@ -220,6 +239,7 @@ function useForm<T extends FormData, TErrors>(
     set,
     submit,
     toggleValue,
+    toggleValues,
     handleChange,
     triggerChange: handleSetChanged,
     setIsSubmitDisabled,

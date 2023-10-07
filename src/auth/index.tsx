@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { parse as parseQs } from "qs";
 import React, { useContext } from "react";
 import { Route, RouteComponentProps, Switch } from "react-router-dom";
@@ -30,6 +31,7 @@ export const UserContext = React.createContext<Context>({
   authenticating: false,
   authenticated: false,
   errors: [],
+  refetchUser: undefined,
 });
 
 const AuthRouter: React.FC = () => (

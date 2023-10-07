@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MetadataInput } from "@dashboard/graphql";
 import { ChangeEvent } from "@dashboard/hooks/useForm";
 import { removeAtIndex, updateAtIndex } from "@dashboard/utils/lists";
@@ -68,7 +69,7 @@ export const Metadata: React.FC<MetadataProps> = memo(({ data, onChange }) => {
   };
 
   return (
-    <Box display="grid" gap={2} paddingBottom={6}>
+    <Box paddingBottom={6}>
       <MetadataCard
         data={data?.metadata}
         isPrivate={false}
@@ -82,3 +83,5 @@ export const Metadata: React.FC<MetadataProps> = memo(({ data, onChange }) => {
     </Box>
   );
 }, propsCompare);
+
+Metadata.displayName = "Metadata";

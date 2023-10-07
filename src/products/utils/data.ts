@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   getDefaultAttributeValues,
   getSelectedAttributeValues,
@@ -204,7 +205,11 @@ export function getProductUpdatePageFormData(
     category: maybe(() => product.category.id, ""),
     taxClassId: product?.taxClass?.id,
     collections: maybe(
-      () => product.collections.map(collection => collection.id),
+      () =>
+        product.collections.map(collection => ({
+          label: collection.name,
+          value: collection.id,
+        })),
       [],
     ),
     isAvailable: !!product?.isAvailable,
@@ -256,5 +261,5 @@ export const getSelectedMedia = <
   selectedMediaIds: string[],
 ) =>
   media
-    .filter(image => selectedMediaIds.indexOf(image.id) !== -1)
+    .filter(image => selectedMediaIds.includes(image.id))
     .sort((prev, next) => (prev.sortOrder > next.sortOrder ? 1 : -1));

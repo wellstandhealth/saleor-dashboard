@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ConfirmButton } from "@dashboard/components/ConfirmButton";
 import PriceField from "@dashboard/components/PriceField";
 import {
@@ -109,12 +110,9 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
                 <FormattedMessage {...refundPageMessages.setMax} />
               </Button>
               <PriceField
-                InputLabelProps={{ shrink: value !== undefined }}
-                inputProps={{
-                  id: inputId,
-                  "aria-invalid": !!submitError ? "true" : "false",
-                  "aria-describedby": errorId,
-                }}
+                id={inputId}
+                aria-invalid={!!submitError ? "true" : "false"}
+                aria-describedby={errorId}
                 disabled={loading}
                 className={classes.input}
                 label={intl.formatMessage(refundPageMessages.refundAmount)}

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import * as React from "react";
 import { UserContext } from "../../src/auth";
 import { adminUserPermissions } from "../../src/fixtures";
@@ -14,6 +15,7 @@ export const MockedUserProvider: React.FC<{
       requestLoginByExternalPlugin: undefined,
       authenticating: false,
       authenticated: false,
+      refetchUser: undefined,
       user: {
         id: "0",
         email: "email@email.me",
@@ -23,6 +25,9 @@ export const MockedUserProvider: React.FC<{
         userPermissions: customPermissions ?? adminUserPermissions,
         avatar: null,
         __typename: "User",
+        accessibleChannels: [],
+        restrictedAccessToChannels: false,
+        metadata: []
       },
       errors: [],
     }}

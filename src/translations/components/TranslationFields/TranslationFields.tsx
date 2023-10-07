@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import CardTitle from "@dashboard/components/CardTitle";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Grid from "@dashboard/components/Grid";
@@ -95,7 +96,6 @@ const useStyles = makeStyles(
       fontWeight: 500,
       marginBottom: theme.spacing(),
       marginTop: theme.spacing(2),
-      textTransform: "uppercase",
     },
     grid: {
       gridRowGap: 0,

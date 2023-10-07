@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChannelData } from "@dashboard/channels/utils";
 import ColumnPicker from "@dashboard/components/ColumnPicker";
 import Datagrid, {
@@ -127,6 +128,7 @@ export const ProductVariants: React.FC<ProductVariantsProps> = ({
         id: "3C3Nj5",
         description: "button",
       })}
+      fillHandle={true}
       availableColumns={columns}
       emptyText={intl.formatMessage(messages.empty)}
       getCellContent={getCellContent}

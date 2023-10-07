@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Locale } from "@dashboard/components/Locale";
 import OrderDiscountCommonModal from "@dashboard/orders/components/OrderDiscountCommonModal/OrderDiscountCommonModal";
 import {
@@ -67,6 +68,7 @@ const MoneyDiscountedCellEditor = ({ onFinishedEditing, value }) => {
   );
 };
 
+// TODO: add new design
 export const moneyDiscountedCellRenderer =
   (): CustomRenderer<MoneyDiscuntedCell> => ({
     kind: GridCellKind.Custom,

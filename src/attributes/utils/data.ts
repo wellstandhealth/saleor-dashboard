@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FetchResult } from "@apollo/client";
 import {
   AttributeInput,
@@ -139,6 +140,7 @@ function getFileOrReferenceAttributeData(
 ) {
   return {
     ...getSimpleAttributeData(data, values),
+    values: [],
     availableInGrid: undefined,
     filterableInDashboard: undefined,
     filterableInStorefront: undefined,

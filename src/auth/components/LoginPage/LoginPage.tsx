@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserContextError } from "@dashboard/auth/types";
 import { passwordResetUrl } from "@dashboard/auth/urls";
 import { Button } from "@dashboard/components/Button";
@@ -151,8 +152,8 @@ const LoginPage: React.FC<LoginCardProps> = props => {
               <FormSpacer />
               <Typography>
                 <FormattedMessage
-                  id="ENBELI"
-                  defaultMessage="or login using"
+                  id="aFU0vm"
+                  defaultMessage="or continue with"
                   description="description"
                 />
               </Typography>

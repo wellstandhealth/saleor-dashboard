@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { subtractMoney } from "@dashboard/components/Money";
 import {
   GiftCardEventsEnum,
@@ -6,6 +7,18 @@ import {
 } from "@dashboard/graphql";
 import { IMoney } from "@dashboard/utils/intl";
 import compact from "lodash/compact";
+
+export const obtainUsedGifrcard = (order?: OrderDetailsFragment) => {
+  if (!order) return null;
+
+  const { giftCards } = order;
+
+  if (giftCards.length > 0) {
+    return giftCards[0];
+  }
+
+  return null;
+};
 
 export const extractOrderGiftCardUsedAmount = (
   order?: OrderDetailsFragment,

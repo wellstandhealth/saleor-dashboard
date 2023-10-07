@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   getReferenceAttributeEntityTypeFromAttribute,
   mergeAttributeValues,
@@ -7,12 +8,10 @@ import { ChannelData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
 import { AttributeInput, Attributes } from "@dashboard/components/Attributes";
-import CardSpacer from "@dashboard/components/CardSpacer";
 import ChannelsAvailabilityCard from "@dashboard/components/ChannelsAvailabilityCard";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata";
-import { MultiAutocompleteChoiceType } from "@dashboard/components/MultiAutocompleteSelectField";
 import Savebar from "@dashboard/components/Savebar";
 import { SeoForm } from "@dashboard/components/SeoForm";
 import {
@@ -31,18 +30,19 @@ import {
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
+import { ProductOrganization } from "@dashboard/products/components/ProductOrganization/ProductOrganization";
 import { ProductVariantPrice } from "@dashboard/products/components/ProductVariantPrice";
 import {
   ProductCreateUrlQueryParams,
   productListUrl,
 } from "@dashboard/products/urls";
 import { getChoices } from "@dashboard/products/utils/data";
+import { Box, Option } from "@saleor/macaw-ui/next";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import { FetchMoreProps, RelayToFlat } from "../../../types";
 import { ProductDetailsForm } from "../ProductDetailsForm";
-import { ProductOrganization } from "../ProductOrganization";
 import { ProductShipping } from "../ProductShipping";
 import { ProductStocks } from "../ProductStocks";
 import ProductTaxes from "../ProductTaxes";
@@ -94,7 +94,7 @@ interface ProductCreatePageProps {
   onAttributeSelectBlur: () => void;
   onCloseDialog: (currentParams?: ProductCreateUrlQueryParams) => void;
   onSelectProductType: (productTypeId: string) => void;
-  onSubmit?(data: ProductCreateData);
+  onSubmit?: (data: ProductCreateData) => any;
 }
 
 export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
@@ -152,7 +152,7 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
   );
 
   const [selectedCollections, setSelectedCollections] = useStateFromProps<
-    MultiAutocompleteChoiceType[]
+    Option[]
   >([]);
 
   const [selectedTaxClass, setSelectedTaxClass] = useStateFromProps(
@@ -216,7 +216,6 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
       {({
         change,
         data,
-        formErrors,
         validationErrors,
         handlers,
         submit,
@@ -224,7 +223,7 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
         attributeRichTextGetters,
       }) => {
         // Comparing explicitly to false because `hasVariants` can be undefined
-        const isSimpleProduct = data.productType?.hasVariants === false;
+        const isSimpleProduct = !data.productType?.hasVariants;
 
         const errors = [...apiErrors, ...validationErrors];
 
@@ -232,7 +231,6 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
           assignReferencesAttributeId,
           data.attributes,
         );
-
         return (
           <DetailPageLayout>
             <TopNav href={productListUrl()} title={header} />
@@ -243,7 +241,6 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
                 errors={errors}
                 onChange={change}
               />
-              <CardSpacer />
               {data.attributes.length > 0 && (
                 <Attributes
                   attributes={data.attributes}
@@ -273,8 +270,8 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
                     onChange={change}
                   />
                   <ProductVariantPrice
-                    ProductVariantChannelListings={data.channelListings}
-                    errors={channelsErrors}
+                    productVariantChannelListings={data.channelListings}
+                    errors={[...errors, ...channelsErrors]}
                     loading={loading}
                     onChange={handlers.changeChannelPrice}
                   />
@@ -284,16 +281,13 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
                     hasVariants={false}
                     onFormDataChange={change}
                     errors={errors}
-                    formErrors={formErrors}
                     stocks={data.stocks}
                     warehouses={warehouses}
                     onChange={handlers.changeStock}
-                    onChangePreorderEndDate={handlers.changePreorderEndDate}
                     onWarehouseStockAdd={handlers.addStock}
                     onWarehouseStockDelete={handlers.deleteStock}
                     onWarehouseConfigure={onWarehouseConfigure}
                   />
-                  <CardSpacer />
                 </>
               )}
               <SeoForm
@@ -363,15 +357,16 @@ export const ProductCreatePage: React.FC<ProductCreatePageProps> = ({
               ) : (
                 <CannotDefineChannelsAvailabilityCard />
               )}
-              <CardSpacer />
-              <ProductTaxes
-                value={data.taxClassId}
-                disabled={loading}
-                onChange={handlers.selectTaxClass}
-                taxClassDisplayName={selectedTaxClass}
-                taxClasses={taxClasses}
-                onFetchMore={fetchMoreTaxClasses}
-              />
+              <Box paddingBottom={52}>
+                <ProductTaxes
+                  value={data.taxClassId}
+                  disabled={loading}
+                  onChange={handlers.selectTaxClass}
+                  taxClassDisplayName={selectedTaxClass}
+                  taxClasses={taxClasses}
+                  onFetchMore={fetchMoreTaxClasses}
+                />
+              </Box>
             </DetailPageLayout.RightSidebar>
             <Savebar
               onCancel={() => navigate(productListUrl())}

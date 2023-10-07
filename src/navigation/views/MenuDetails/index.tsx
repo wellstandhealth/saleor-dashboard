@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import ActionDialog from "@dashboard/components/ActionDialog";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
 import {
@@ -118,7 +119,6 @@ const MenuDetails: React.FC<MenuDetailsProps> = ({ id, params }) => {
 
       default:
         throw unknownTypeError;
-        break;
     }
   };
 

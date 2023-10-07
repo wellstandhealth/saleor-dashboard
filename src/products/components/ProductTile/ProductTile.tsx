@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { StatusDot } from "@dashboard/components/StatusDot/StatusDot";
 import { ProductListQuery } from "@dashboard/graphql";
 import { RelayToFlat } from "@dashboard/types";
@@ -18,9 +19,6 @@ export interface ProductTileProps {
 }
 
 const commonThumbnailProps = {
-  borderColor: "neutralHighlight",
-  borderStyle: "solid",
-  borderWidth: 1,
   marginBottom: 1.5,
   borderRadius: 3,
   aspectRatio: "1 / 1",
@@ -44,7 +42,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
         {...commonThumbnailProps}
         as="img"
         alt={product.name}
-        objectFit="scale-down"
+        objectFit="cover"
         src={product.thumbnail.url}
       />
     ) : (

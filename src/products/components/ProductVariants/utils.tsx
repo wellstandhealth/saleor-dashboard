@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChannelData } from "@dashboard/channels/utils";
 import {
   booleanCell,
@@ -121,9 +122,10 @@ export function getData({
 
   switch (columnId) {
     case "name":
-    case "sku":
+    case "sku": {
       const value = change ?? (dataRow ? dataRow[columnId] : "");
       return textCell(value || "");
+    }
   }
 
   if (getColumnStock(columnId)) {

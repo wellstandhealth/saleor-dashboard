@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChannelData } from "@dashboard/channels/utils";
 import useCurrentDate from "@dashboard/hooks/useCurrentDate";
 import useDateLocalize from "@dashboard/hooks/useDateLocalize";
@@ -58,9 +59,6 @@ export const ChannelAvailabilityItemContent: React.FC<ChannelContentProps> = ({
   const [isAvailableDate, setAvailableDate] = useState(false);
   const intl = useIntl();
 
-  const parsedDate = new Date(dateNow);
-  const todayDateUTC = parsedDate.toISOString().slice(0, 10);
-
   const visibleMessage = (date: string) =>
     intl.formatMessage(availabilityItemMessages.sinceDate, {
       date: localizeDate(date),
@@ -78,8 +76,7 @@ export const ChannelAvailabilityItemContent: React.FC<ChannelContentProps> = ({
           onChange(id, {
             ...formData,
             isPublished: value === "true",
-            publicationDate:
-              !isPublished && !publicationDate ? todayDateUTC : publicationDate,
+            publicationDate: value === "false" ? null : publicationDate,
           });
         }}
         disabled={disabled}
@@ -166,7 +163,8 @@ export const ChannelAvailabilityItemContent: React.FC<ChannelContentProps> = ({
             onValueChange={value =>
               onChange(id, {
                 ...formData,
-                availableForPurchase: !value ? null : availableForPurchase,
+                availableForPurchase:
+                  value === "false" ? null : availableForPurchase,
                 isAvailableForPurchase: value === "true",
               })
             }
@@ -236,7 +234,7 @@ export const ChannelAvailabilityItemContent: React.FC<ChannelContentProps> = ({
                         )
                       : ""
                   }
-                  value={availableForPurchase ? availableForPurchase : ""}
+                  value={availableForPurchase || ""}
                   onChange={e =>
                     onChange(id, {
                       ...formData,

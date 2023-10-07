@@ -1,7 +1,9 @@
+// @ts-strict-ignore
 import { LogLevels } from "@editorjs/editorjs";
-import { FormControl, FormHelperText, InputLabel } from "@material-ui/core";
+import { FormControl, FormHelperText } from "@material-ui/core";
 import { useId } from "@reach/auto-id";
 import { EditorCore, Props as ReactEditorJSProps } from "@react-editor-js/core";
+import { Box } from "@saleor/macaw-ui/next";
 import clsx from "clsx";
 import React from "react";
 import { createReactEditorJS } from "react-editor-js";
@@ -71,19 +73,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       fullWidth
       variant="outlined"
     >
-      <InputLabel
-        focused={true}
-        shrink={true}
-        classes={{
-          disabled: classes.labelDisabled,
-          error: classes.labelError,
-          root: classes.labelRoot,
-        }}
-        error={error}
-        disabled={disabled}
+      <Box
+        as="label"
+        color={error ? "textCriticalSubdued" : "textNeutralSubdued"}
+        fontWeight="bodySmall"
+        fontSize="captionSmall"
+        position="absolute"
+        htmlFor={id}
+        zIndex="2"
+        __top={9}
+        __left={9}
       >
         {label}
-      </InputLabel>
+      </Box>
       {hasRendered && (
         <ReactEditorJS
           // match with the id of holder div
@@ -106,6 +108,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               [classes.rootActive]: isFocused,
               [classes.rootDisabled]: disabled,
               [classes.rootError]: error,
+              [classes.rootHasLabel]: label !== "",
               [classes.rootTyped]:
                 isTyped || props.defaultValue?.blocks?.length > 0,
             })}
@@ -114,7 +117,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           />
         </ReactEditorJS>
       )}
-      <FormHelperText>{helperText}</FormHelperText>
+      {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
 };

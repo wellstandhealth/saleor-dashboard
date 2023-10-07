@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import ChannelDeleteDialog from "@dashboard/channels/components/ChannelDeleteDialog";
 import { FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
 import { getChannelsCurrencyChoices } from "@dashboard/channels/utils";
@@ -115,6 +116,9 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
     defaultCountry,
     allocationStrategy,
     markAsPaidStrategy,
+    deleteExpiredOrdersAfter,
+    allowUnpaidOrders,
+    defaultTransactionFlowStrategy,
   }: FormData) => {
     const updateChannelMutation = updateChannel({
       variables: {
@@ -132,6 +136,9 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
           },
           orderSettings: {
             markAsPaidStrategy,
+            deleteExpiredOrdersAfter,
+            allowUnpaidOrders,
+            defaultTransactionFlowStrategy,
           },
         },
       },
