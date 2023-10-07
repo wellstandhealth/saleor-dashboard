@@ -3,7 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY scripts/patchReactVirtualized.js scripts/
 ENV CI 1
-RUN npm ci --omit=optional --legacy-peer-deps
+
+RUN npm install
 
 COPY nginx/ nginx/
 COPY assets/ assets/
@@ -33,8 +34,6 @@ ENV APPS_MARKETPLACE_API_URI ${APPS_MARKETPLACE_API_URI:-https://apps.saleor.io/
 ENV APPS_TUNNEL_URL_KEYWORDS ${APPS_TUNNEL_URL_KEYWORDS}
 ENV STATIC_URL ${STATIC_URL:-/dashboard/}
 ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
-
-RUN npm install
 
 RUN npm run build --verbose
 
