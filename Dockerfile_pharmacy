@@ -34,6 +34,8 @@ ENV APPS_TUNNEL_URL_KEYWORDS ${APPS_TUNNEL_URL_KEYWORDS}
 ENV STATIC_URL ${STATIC_URL:-/dashboard/}
 ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
 
+RUN npm install
+
 RUN npm run build --verbose
 
 FROM nginx:stable-bullseye as runner
