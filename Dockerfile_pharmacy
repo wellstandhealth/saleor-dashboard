@@ -1,5 +1,5 @@
-FROM node:18-buster-slim as builder
-RUN apt-get update -y
+FROM node:18-alpine as builder
+RUN apk update && apk upgrade
 
 WORKDIR /app
 COPY package*.json yarn.lock tsconfig.json vite.config.js sw.js *.d.ts ./
@@ -36,8 +36,8 @@ ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
 
 RUN yarn --quiet && yarn build
 
-FROM nginx:stable-buster as runner
-RUN apt-get update && apt-get -y upgrade
+FROM nginx:stable-alpine as runner
+RUN apk update && apk upgrade
 
 WORKDIR /app
 
