@@ -6,6 +6,7 @@ import {
 import { ChannelPriceData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
+import { Container } from "@dashboard/components/AssignContainerDialog";
 import {
   AttributeInput,
   Attributes,
@@ -180,7 +181,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
   };
 
   const handleAssignReferenceAttribute = (
-    attributeValues: string[],
+    attributeValues: Container[],
     data: ProductVariantUpdateData,
     handlers: ProductVariantUpdateHandlers,
   ) => {
@@ -188,9 +189,13 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
       assignReferencesAttributeId,
       mergeAttributeValues(
         assignReferencesAttributeId,
-        attributeValues,
+        attributeValues.map(({ id }) => id),
         data.attributes,
       ),
+    );
+    handlers.selectAttributeReferenceMetadata(
+      assignReferencesAttributeId,
+      attributeValues.map(({ name, id }) => ({ value: id, label: name })),
     );
     onCloseDialog();
   };
@@ -259,6 +264,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                     <CardSpacer />
                     <VariantDetailsChannelsAvailabilityCard
                       variant={variant}
+                      disabled={loading}
                       onManageClick={toggleManageChannels}
                     />
                     {nonSelectionAttributes.length > 0 && (
@@ -312,7 +318,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                       </>
                     )}
                     <ProductVariantMedia
-                      disabled={loading}
+                      disabled={loading || productMedia.length === 0}
                       media={media}
                       placeholderImage={placeholderImage}
                       onImageAdd={toggleModal}

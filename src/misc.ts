@@ -9,7 +9,7 @@ import {
 } from "@dashboard/graphql";
 import { Node, SlugNode } from "@dashboard/types";
 import { ThemeType } from "@saleor/macaw-ui";
-import { DefaultTheme, ThemeTokensValues } from "@saleor/macaw-ui/next";
+import { DefaultTheme, ThemeTokensValues } from "@saleor/macaw-ui-next";
 import uniqBy from "lodash/uniqBy";
 import moment from "moment-timezone";
 import { IntlShape } from "react-intl";
@@ -311,12 +311,26 @@ export const parseLogMessage = ({
   intl,
   code,
   field,
+  voucherCodes,
 }: {
   intl: IntlShape;
   code: string;
   field?: string;
-}) =>
-  intl.formatMessage(errorMessages.baseCodeErrorMessage, {
+  voucherCodes?: string[];
+}) => {
+  if (voucherCodes) {
+    return (
+      intl.formatMessage(
+        voucherCodes.length > 1
+          ? errorMessages.voucherCodesErrorMessage
+          : errorMessages.voucherCodeErrorMessage,
+      ) +
+      ": \n" +
+      voucherCodes.join("\n")
+    );
+  }
+
+  return intl.formatMessage(errorMessages.baseCodeErrorMessage, {
     errorCode: code,
     fieldError:
       field &&
@@ -324,6 +338,7 @@ export const parseLogMessage = ({
         fieldName: field,
       }),
   });
+};
 
 interface User {
   email: string;

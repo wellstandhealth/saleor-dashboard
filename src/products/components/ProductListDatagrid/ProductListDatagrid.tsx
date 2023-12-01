@@ -28,7 +28,7 @@ import {
 } from "@dashboard/types";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { Item } from "@glideapps/glide-data-grid";
-import { Box, useTheme } from "@saleor/macaw-ui/next";
+import { Box, useTheme } from "@saleor/macaw-ui-next";
 import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -251,7 +251,7 @@ export const ProductListDatagrid: React.FC<ProductListDatagridProps> = ({
         <Datagrid
           readonly
           loading={loading}
-          rowMarkers="checkbox"
+          rowMarkers="checkbox-visible"
           columnSelect="single"
           hasRowHover={hasRowHover}
           onColumnMoved={handlers.onMove}

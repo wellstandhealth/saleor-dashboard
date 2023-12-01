@@ -10,6 +10,7 @@ import {
   createAttributeFileChangeHandler,
   createAttributeMultiChangeHandler,
   createAttributeReferenceChangeHandler,
+  createAttributeReferenceMetadataHandler,
   createAttributeValueReorderHandler,
   createFetchMoreReferencesHandler,
   createFetchReferencesHandler,
@@ -50,7 +51,7 @@ import {
 } from "./types";
 import { prepareVariantChangeData } from "./utils";
 
-function useProductUpdateForm(
+export function useProductUpdateForm(
   product: ProductFragment,
   onSubmit: (data: ProductUpdateSubmitData) => SubmitResult,
   disabled: boolean,
@@ -143,6 +144,10 @@ function useProductUpdateForm(
   );
   const handleAttributeReferenceChange = createAttributeReferenceChangeHandler(
     attributes.change,
+    triggerChange,
+  );
+  const handleAttributeMetadataChange = createAttributeReferenceMetadataHandler(
+    attributes.setMetadata,
     triggerChange,
   );
   const handleFetchReferences = createFetchReferencesHandler(
@@ -254,6 +259,11 @@ function useProductUpdateForm(
           ),
     );
     datagrid.setRemoved([]);
+    variants.current = {
+      added: [],
+      removed: [],
+      updates: [],
+    };
 
     return result;
   }, [datagrid, handleFormSubmit, getSubmitData]);
@@ -299,6 +309,7 @@ function useProductUpdateForm(
       selectAttributeFile: handleAttributeFileChange,
       selectAttributeMultiple: handleAttributeMultiChange,
       selectAttributeReference: handleAttributeReferenceChange,
+      selectAttributeReferenceMetadata: handleAttributeMetadataChange,
       selectCategory: handleCategorySelect,
       selectCollection: handleCollectionSelect,
       selectTaxClass: handleTaxClassSelect,

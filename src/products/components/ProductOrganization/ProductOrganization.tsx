@@ -11,7 +11,7 @@ import { ChangeEvent } from "@dashboard/hooks/useForm";
 import { productTypeUrl } from "@dashboard/productTypes/urls";
 import { FetchMoreProps } from "@dashboard/types";
 import { getFormErrors, getProductErrorMessage } from "@dashboard/utils/errors";
-import { Box, Option, Text } from "@saleor/macaw-ui/next";
+import { Box, Option, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -125,45 +125,46 @@ export const ProductOrganization: React.FC<
               <Text variant="bodyEmp">
                 <FormattedMessage id="anK7jD" defaultMessage="Product Type" />
               </Text>
-              <Text variant="caption">
-                <Link
-                  href={productTypeUrl(productType?.id) ?? ""}
-                  disabled={!productType?.id}
-                >
-                  {productType?.name ?? "..."}
-                </Link>
-              </Text>
+              {productType?.id ? (
+                <Text variant="caption">
+                  <Link href={productTypeUrl(productType?.id) ?? ""}>
+                    {productType?.name ?? "..."}
+                  </Link>
+                </Text>
+              ) : (
+                <Text variant="caption">{productType?.name ?? "..."}</Text>
+              )}
             </Box>
           </Box>
         )}
 
-        <Combobox
-          disabled={disabled}
-          data-test-id="category"
-          options={disabled ? [] : categories}
-          value={
-            data.category
-              ? {
-                  value: data.category,
-                  label: categoryInputDisplayValue,
-                }
-              : null
-          }
-          error={!!(formErrors.category || noCategoryError)}
-          helperText={getProductErrorMessage(
-            formErrors.category || noCategoryError,
-            intl,
-          )}
-          onChange={onCategoryChange}
-          fetchOptions={fetchCategories}
-          fetchMore={fetchMoreCategories}
-          name="category"
-          label={intl.formatMessage({
-            id: "ccXLVi",
-            defaultMessage: "Category",
-          })}
-        />
-
+        <Box data-test-id="category">
+          <Combobox
+            disabled={disabled}
+            options={disabled ? [] : categories}
+            value={
+              data.category
+                ? {
+                    value: data.category,
+                    label: categoryInputDisplayValue,
+                  }
+                : null
+            }
+            error={!!(formErrors.category || noCategoryError)}
+            helperText={getProductErrorMessage(
+              formErrors.category || noCategoryError,
+              intl,
+            )}
+            onChange={onCategoryChange}
+            fetchOptions={fetchCategories}
+            fetchMore={fetchMoreCategories}
+            name="category"
+            label={intl.formatMessage({
+              id: "ccXLVi",
+              defaultMessage: "Category",
+            })}
+          />
+        </Box>
         <Multiselect
           disabled={disabled}
           options={collections}

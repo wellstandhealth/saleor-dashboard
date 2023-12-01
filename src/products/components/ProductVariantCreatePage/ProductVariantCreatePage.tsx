@@ -5,6 +5,7 @@ import {
 } from "@dashboard/attributes/utils/data";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
+import { Container } from "@dashboard/components/AssignContainerDialog";
 import {
   AttributeInput,
   Attributes,
@@ -139,7 +140,7 @@ const ProductVariantCreatePage: React.FC<ProductVariantCreatePageProps> = ({
   const canOpenAssignReferencesAttributeDialog = !!assignReferencesAttributeId;
 
   const handleAssignReferenceAttribute = (
-    attributeValues: string[],
+    attributeValues: Container[],
     data: ProductVariantCreateData,
     handlers: ProductVariantCreateHandlers,
   ) => {
@@ -147,9 +148,13 @@ const ProductVariantCreatePage: React.FC<ProductVariantCreatePageProps> = ({
       assignReferencesAttributeId,
       mergeAttributeValues(
         assignReferencesAttributeId,
-        attributeValues,
+        attributeValues.map(({ id }) => id),
         data.attributes,
       ),
+    );
+    handlers.selectAttributeReferenceMetadata(
+      assignReferencesAttributeId,
+      attributeValues.map(({ id, name }) => ({ value: id, label: name })),
     );
     onCloseDialog();
   };
@@ -180,7 +185,7 @@ const ProductVariantCreatePage: React.FC<ProductVariantCreatePageProps> = ({
         const errors = [...apiErrors, ...validationErrors];
 
         return (
-          <DetailPageLayout>
+          <DetailPageLayout gridTemplateColumns={1}>
             <TopNav href={productUrl(productId)} title={header} />
             <DetailPageLayout.Content>
               <Grid variant="inverted">
@@ -202,6 +207,7 @@ const ProductVariantCreatePage: React.FC<ProductVariantCreatePageProps> = ({
                   />
                   <CardSpacer />
                   <ProductDetailsChannelsAvailabilityCard
+                    disabled={disabled}
                     product={product}
                     onManageClick={toggleManageChannels}
                   />

@@ -135,6 +135,7 @@ export const saleList: SaleFragment[] = [
 export const voucherList: VoucherFragment[] = [
   {
     __typename: "Voucher" as "Voucher",
+    name: "Free shipping",
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -156,7 +157,6 @@ export const voucherList: VoucherFragment[] = [
         },
       },
     ],
-    code: "FREE2019",
     countries: [
       {
         __typename: "CountryDisplay",
@@ -174,6 +174,7 @@ export const voucherList: VoucherFragment[] = [
   },
   {
     __typename: "Voucher" as "Voucher",
+    name: "Free 2019",
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -195,7 +196,6 @@ export const voucherList: VoucherFragment[] = [
         },
       },
     ],
-    code: "FREE2020",
     countries: [],
     type: "ENTIRE_ORDER" as VoucherTypeEnum,
     discountValueType: "FIXED" as DiscountValueTypeEnum,
@@ -582,10 +582,12 @@ export const sale: SaleDetailsFragment = {
 
 export const voucherDetails: VoucherDetailsFragment = {
   __typename: "Voucher",
+  name: "VFree2020",
   metadata: [],
   privateMetadata: [],
   applyOncePerCustomer: false,
   applyOncePerOrder: false,
+  singleUse: false,
   onlyForStaff: false,
   categoriesCount: {
     __typename: "CategoryCountableConnection",
@@ -629,7 +631,6 @@ export const voucherDetails: VoucherDetailsFragment = {
       },
     },
   ],
-  code: "DISCOUNT",
   collections: {
     __typename: "CollectionCountableConnection",
     edges: [],
