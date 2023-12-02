@@ -57,6 +57,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { maybe } from "../../../misc";
 import { createUpdateHandler } from "./handlers";
+import { useVoucherCodes } from "./hooks/useVoucherCodes";
 import { VOUCHER_UPDATE_FORM_ID } from "./types";
 
 interface VoucherDetailsProps {
@@ -130,6 +131,22 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
     },
   });
 
+  const {
+    voucherCodes,
+    voucherCodesLoading,
+    voucherCodesPagination,
+    voucherCodesSettings,
+    selectedVoucherCodesIds,
+    addedVoucherCodes,
+    voucherCodesRefetch,
+    handleSetSelectedVoucherCodesIds,
+    updateVoucherCodesListSettings,
+    handleAddVoucherCode,
+    handleGenerateMultipleCodes,
+    handleDeleteVoucherCodes,
+    handleClearAddedVoucherCodes,
+  } = useVoucherCodes({ id });
+
   const [openModal, closeModal] = createDialogActionHandlers<
     VoucherUrlDialog,
     VoucherUrlQueryParams
@@ -181,6 +198,8 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
       if (data.voucherUpdate.errors.length === 0) {
         closeModal();
         notifySaved();
+        handleClearAddedVoucherCodes();
+        voucherCodesRefetch();
       }
     },
   });
@@ -308,6 +327,17 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
       )}
       <VoucherDetailsPage
         voucher={data?.voucher}
+        voucherCodes={voucherCodes}
+        addedVoucherCodes={addedVoucherCodes}
+        voucherCodesPagination={voucherCodesPagination}
+        voucherCodesLoading={voucherCodesLoading}
+        voucherCodesSettings={voucherCodesSettings}
+        onDeleteVoucherCodes={handleDeleteVoucherCodes}
+        onMultipleVoucheCodesGenerate={handleGenerateMultipleCodes}
+        onCustomVoucherCodeGenerate={handleAddVoucherCode}
+        onVoucherCodesSettingsChange={updateVoucherCodesListSettings}
+        onSelectVoucherCodesIds={handleSetSelectedVoucherCodesIds}
+        selectedVoucherCodesIds={selectedVoucherCodesIds}
         allChannelsCount={allChannels?.length}
         channelListings={currentChannels}
         disabled={
@@ -429,7 +459,7 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
               ...detailsQueryInclude,
               id,
               input: {
-                categories,
+                categories: categories.map(category => category.id),
               },
             },
           })
@@ -453,7 +483,7 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
               ...detailsQueryInclude,
               id,
               input: {
-                collections,
+                collections: collections.map(collection => collection.id),
               },
             },
           })
@@ -494,7 +524,7 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
               ...detailsQueryInclude,
               id,
               input: {
-                products,
+                products: products.map(product => product.id),
               },
             },
           })
@@ -618,7 +648,7 @@ export const VoucherDetails: React.FC<VoucherDetailsProps> = ({
             description="dialog content"
             values={{
               voucherCode: (
-                <strong>{maybe(() => data.voucher.code, "...")}</strong>
+                <strong>{maybe(() => data.voucher.name, "...")}</strong>
               ),
             }}
           />

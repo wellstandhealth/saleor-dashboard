@@ -10,7 +10,7 @@ import {
   DropdownButton,
   Popover,
   Text,
-} from "@saleor/macaw-ui/next";
+} from "@saleor/macaw-ui-next";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -26,7 +26,7 @@ export const ExpressionFilters = () => {
   return (
     <Popover open={open} onOpenChange={open => setOpen(open)}>
       <Popover.Trigger>
-        <DropdownButton>
+        <DropdownButton data-test-id="filters-button">
           {formatMessage(conditionalFilterMessages.popoverTrigger, {
             count: valueProvider.count,
           })}

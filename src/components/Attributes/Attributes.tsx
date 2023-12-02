@@ -9,9 +9,10 @@ import {
   ProductErrorWithAttributesFragment,
 } from "@dashboard/graphql";
 import { FormsetAtomicData } from "@dashboard/hooks/useFormset";
+import { AttributeValuesMetadata } from "@dashboard/products/utils/data";
 import { FetchMoreProps } from "@dashboard/types";
 import { RichTextGetters } from "@dashboard/utils/richText/useMultipleRichText";
-import { Accordion, Box, Text } from "@saleor/macaw-ui/next";
+import { Accordion, Box, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
@@ -29,7 +30,11 @@ export interface AttributeInputData {
   selectedValues?: AttributeValueDetailsFragment[];
   references?: AttributeReference[];
 }
-export type AttributeInput = FormsetAtomicData<AttributeInputData, string[]>;
+export type AttributeInput = FormsetAtomicData<
+  AttributeInputData,
+  string[],
+  AttributeValuesMetadata[]
+>;
 export type AttributeFileInput = FormsetAtomicData<AttributeInputData, File[]>;
 export interface AttributesProps extends AttributeRowHandlers {
   attributes: AttributeInput[];
@@ -77,7 +82,7 @@ export const Attributes: React.FC<AttributesProps> = ({
           <Accordion defaultValue="attributes-accordion">
             <Accordion.Item value="attributes-accordion">
               <Accordion.Trigger
-                buttonDataTestId="attributes-expand"
+                data-testid="attributes-expand"
                 flexWrap="wrap"
                 alignItems="flex-start"
               >

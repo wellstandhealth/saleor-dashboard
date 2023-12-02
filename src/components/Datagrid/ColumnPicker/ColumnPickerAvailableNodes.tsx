@@ -1,5 +1,5 @@
 import { CircularProgress } from "@material-ui/core";
-import { Box, Checkbox, Text } from "@saleor/macaw-ui/next";
+import { Box, Checkbox, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -61,7 +61,7 @@ export const ColumnPickerAvailableNodes = ({
             color="textNeutralSubdued"
             ellipsis
           >
-            {node.title}
+            {node.pickerTitle ?? node.title}
           </Text>
         </Checkbox>
       </Box>

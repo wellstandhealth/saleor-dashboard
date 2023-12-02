@@ -40,7 +40,6 @@ function updateProductManageInChannel(manageSelector) {
     .get(BUTTON_SELECTORS.confirm)
     .click()
     .confirmationMessageShouldAppear()
-    .confirmationMessageShouldDisappear()
     .wait("@ProductChannelListingUpdate");
 }
 
@@ -124,7 +123,7 @@ export function fillUpProductOrganization({
 export function fillUpCollectionAndCategory({ category, collection }) {
   const organization = {};
   return cy
-    .fillAutocompleteSelect(PRODUCT_DETAILS.categoryInput, category, true)
+    .fillAutocompleteSelect(PRODUCT_DETAILS.categoryInput, category, false)
     .then(selected => {
       organization.category = selected;
       cy.fillNewMultiSelect(PRODUCT_DETAILS.collectionInput, collection);
