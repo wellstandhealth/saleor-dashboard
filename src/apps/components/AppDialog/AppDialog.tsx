@@ -19,7 +19,7 @@ export const AppDialog: React.FC<AppDialogProps> = ({ children, ...props }) => {
   const classes = useStyles();
 
   return (
-    <Dialog aria-labelledby="extension app dialog" {...props}>
+    <Dialog aria-labelledby="extension app dialog" {...props}  maxWidth="xl">
       <DialogTitle disableTypography className={classes.header}>
         <Typography variant="h6" component="h2">
           {props.title}
