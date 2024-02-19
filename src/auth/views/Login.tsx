@@ -87,6 +87,9 @@ const LoginView: React.FC<LoginViewProps> = ({ params }) => {
     const externalAuthNotPerformed = !authenticating && !errors.length;
 
     if (externalAuthParamsExist && externalAuthNotPerformed) {
+      console.log("calling handleExternalAuthentication");
+      console.log("code", code);
+      console.log("state", state);
       handleExternalAuthentication(code, state);
     }
 
