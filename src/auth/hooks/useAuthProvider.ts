@@ -191,6 +191,7 @@ export function useAuthProvider({
       return;
     }
     try {
+      console.log(pluginId, input.code, input.state);
       const result = await getExternalAccessToken({
         pluginId,
         input: JSON.stringify(input),
