@@ -307,6 +307,9 @@ const Routes: React.FC = () => {
                     path={CustomAppSections.appsSection}
                     component={CustomAppsSection}
                   />
+                  <SectionRoute path={"/healthz"}>
+                    <h3>The App is Healthy</h3>
+                  </SectionRoute>
                   <Route component={NotFound} />
                 </Switch>
               </ErrorBoundary>
