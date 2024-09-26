@@ -2,16 +2,13 @@ FROM node:18-alpine as builder
 RUN apk update && apk upgrade
 RUN apk --no-cache add bash
 WORKDIR /app
-COPY package*.json ./
-
+COPY package*.json yarn.lock tsconfig.json vite.config.js *.d.ts ./
+RUN yarn --quiet && yarn install
 
 COPY nginx/ nginx/
 COPY assets/ assets/
 COPY locale/ locale/
 COPY scripts/ scripts/
-COPY vite.config.js ./
-COPY tsconfig.json ./
-COPY *.d.ts ./
 COPY schema.graphql ./
 COPY introspection.json ./
 COPY introspection*.json ./
@@ -34,8 +31,8 @@ ENV APPS_TUNNEL_URL_KEYWORDS ${APPS_TUNNEL_URL_KEYWORDS}
 ENV STATIC_URL ${STATIC_URL:-/dashboard/}
 ENV SKIP_SOURCEMAPS ${SKIP_SOURCEMAPS:-true}
 ENV LOCALE_CODE ${LOCALE_CODE:-EN}
-RUN npm install
-RUN npm run build
+
+RUN yarn --quiet && yarn build
 
 FROM nginx:stable-alpine as runner
 RUN apk update && apk upgrade
