@@ -1,35 +1,30 @@
-// @ts-strict-ignore
 import { AppLogo } from "@dashboard/apps/types";
 import { Box, GenericAppIcon } from "@saleor/macaw-ui-next";
 import React from "react";
 
+type Logo = AppLogo | undefined;
+type Size = 4 | 8 | 12;
+
 export const AppAvatar: React.FC<{
-  logo?: AppLogo | undefined;
-  size?: 8 | 12;
+  logo?: Logo;
+  size?: Size;
 }> = ({ logo, size = 8 }) =>
   logo ? (
-    <Box
-      width={size}
-      height={size}
-      display="flex"
-      placeItems="center"
-      borderRadius={2}
-    >
-      <Box as="img" src={logo.source} width={"100%"} />
+    <Box width={size} height={size} display="flex" placeItems="center" borderRadius={2}>
+      <Box as="img" src={logo.source} width="100%" />
     </Box>
   ) : (
     <Box
-      padding={1}
-      backgroundColor="surfaceNeutralSubdued"
+      backgroundColor="default2"
       width={size}
       height={size}
       display="flex"
       placeItems="center"
       borderRadius={2}
       borderWidth={1}
-      borderColor={"neutralPlain"}
-      borderStyle={"solid"}
+      borderColor="default1"
+      borderStyle="solid"
     >
-      <GenericAppIcon size="large" color="iconNeutralSubdued" />
+      <GenericAppIcon size="medium" color="default2" />
     </Box>
   );

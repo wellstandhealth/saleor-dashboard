@@ -7,7 +7,7 @@ import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButto
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata, MetadataFormData } from "@dashboard/components/Metadata";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import { Tab, TabContainer } from "@dashboard/components/Tab";
 import {
   createSaleChannelsChangeHandler,
@@ -24,7 +24,7 @@ import {
 } from "@dashboard/graphql";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import { mapEdgesToItems, mapMetadataItemToInput } from "@dashboard/utils/maps";
+import { mapMetadataItemToInput } from "@dashboard/utils/maps";
 import useMetadataChangeTrigger from "@dashboard/utils/metadata/useMetadataChangeTrigger";
 import { sprinkles } from "@saleor/macaw-ui-next";
 import React from "react";
@@ -69,10 +69,7 @@ export type SaleTabItemsCount = Partial<Record<SaleDetailsPageTab, number>>;
 export interface SaleDetailsPageProps
   extends Pick<ListProps, Exclude<keyof ListProps, "getRowHref">>,
     TabListActions<
-      | "categoryListToolbar"
-      | "collectionListToolbar"
-      | "productListToolbar"
-      | "variantListToolbar"
+      "categoryListToolbar" | "collectionListToolbar" | "productListToolbar" | "variantListToolbar"
     >,
     ChannelProps {
   activeTab: SaleDetailsPageTab;
@@ -101,7 +98,6 @@ const CategoriesTab = Tab(SaleDetailsPageTab.categories);
 const CollectionsTab = Tab(SaleDetailsPageTab.collections);
 const ProductsTab = Tab(SaleDetailsPageTab.products);
 const VariantsTab = Tab(SaleDetailsPageTab.variants);
-
 const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
   activeTab,
   tabItemsCount = {},
@@ -136,14 +132,8 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
 }) => {
   const intl = useIntl();
   const navigate = useNavigator();
-
-  const [localErrors, setLocalErrors] = React.useState<DiscountErrorFragment[]>(
-    [],
-  );
-
-  const { makeChangeHandler: makeMetadataChangeHandler } =
-    useMetadataChangeTrigger();
-
+  const [localErrors, setLocalErrors] = React.useState<DiscountErrorFragment[]>([]);
+  const { makeChangeHandler: makeMetadataChangeHandler } = useMetadataChangeTrigger();
   const initialForm: SaleDetailsPageFormData = {
     channelListings,
     endDate: splitDateTime(sale?.endDate ?? "").date,
@@ -156,10 +146,8 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
     metadata: sale?.metadata.map(mapMetadataItemToInput),
     privateMetadata: sale?.privateMetadata.map(mapMetadataItemToInput),
   };
-
   const checkIfSaveIsDisabled = (data: SaleDetailsPageFormData) =>
-    data.channelListings?.some(channel => validateSalePrice(data, channel)) ||
-    disabled;
+    data.channelListings?.some(channel => validateSalePrice(data, channel)) || disabled;
 
   return (
     <Form
@@ -177,21 +165,14 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
           data.type,
         );
         const changeMetadata = makeMetadataChangeHandler(change);
-
         const handleSubmit = createSaleUpdateHandler(submit, setLocalErrors);
-
         const allErrors = [...localErrors, ...errors];
 
         return (
           <DetailPageLayout>
             <TopNav href={saleListUrl()} title={sale?.name} />
             <DetailPageLayout.Content>
-              <SaleInfo
-                data={data}
-                disabled={disabled}
-                errors={errors}
-                onChange={change}
-              />
+              <SaleInfo data={data} disabled={disabled} errors={errors} onChange={change} />
               <SaleType data={data} disabled={disabled} onChange={change} />
               <SaleValue
                 data={data}
@@ -268,7 +249,7 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
                   disabled={disabled}
                   onProductAssign={onProductAssign}
                   onProductUnassign={onProductUnassign}
-                  products={mapEdgesToItems(sale?.products)}
+                  discount={sale}
                   isChecked={isChecked}
                   selected={selected}
                   toggle={toggle}
@@ -280,7 +261,7 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
                   disabled={disabled}
                   onVariantAssign={onVariantAssign}
                   onVariantUnassign={onVariantUnassign}
-                  variants={mapEdgesToItems(sale?.variants)}
+                  discount={sale}
                   isChecked={isChecked}
                   selected={selected}
                   toggle={toggle}
@@ -289,12 +270,7 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
                 />
               )}
               <CardSpacer />
-              <DiscountDates
-                data={data}
-                disabled={disabled}
-                errors={errors}
-                onChange={change}
-              />
+              <DiscountDates data={data} disabled={disabled} errors={errors} onChange={change} />
               <Metadata data={data} onChange={changeMetadata} />
             </DetailPageLayout.Content>
             <DetailPageLayout.RightSidebar>
@@ -310,18 +286,22 @@ const SaleDetailsPage: React.FC<SaleDetailsPageProps> = ({
                 openModal={openChannelsModal}
               />
             </DetailPageLayout.RightSidebar>
-            <Savebar
-              disabled={disabled}
-              onCancel={() => navigate(saleListUrl())}
-              onDelete={onRemove}
-              onSubmit={() => handleSubmit(data)}
-              state={saveButtonBarState}
-            />
+            <Savebar>
+              <Savebar.DeleteButton onClick={onRemove} />
+              <Savebar.Spacer />
+              <Savebar.CancelButton onClick={() => navigate(saleListUrl())} />
+              <Savebar.ConfirmButton
+                transitionState={saveButtonBarState}
+                onClick={() => handleSubmit(data)}
+                disabled={disabled}
+              />
+            </Savebar>
           </DetailPageLayout>
         );
       }}
     </Form>
   );
 };
+
 SaleDetailsPage.displayName = "SaleDetailsPage";
 export default SaleDetailsPage;

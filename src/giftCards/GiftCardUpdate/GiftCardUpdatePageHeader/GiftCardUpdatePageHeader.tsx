@@ -2,6 +2,7 @@ import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { Button } from "@dashboard/components/Button";
 import HorizontalSpacer from "@dashboard/components/HorizontalSpacer";
 import GiftCardStatusChip from "@dashboard/giftCards/components/GiftCardStatusChip/GiftCardStatusChip";
+import { useGiftCardPermissions } from "@dashboard/giftCards/hooks/useGiftCardPermissions";
 import { giftCardsListPath } from "@dashboard/giftCards/urls";
 import { getStringOrPlaceholder } from "@dashboard/misc";
 import React from "react";
@@ -17,8 +18,8 @@ import useStyles from "./styles";
 const GiftCardUpdatePageHeader: React.FC = () => {
   const classes = useStyles();
   const intl = useIntl();
+  const { canManageChannels } = useGiftCardPermissions();
   const { giftCard } = useGiftCardDetails();
-
   const { openResendCodeDialog } = useGiftCardUpdateDialogs();
 
   if (!giftCard) {
@@ -26,10 +27,11 @@ const GiftCardUpdatePageHeader: React.FC = () => {
   }
 
   const { last4CodeChars, isExpired } = giftCard;
-
   const title = intl.formatMessage(tableMessages.codeEndingWithLabel, {
     last4CodeChars,
   });
+
+  const canResendCode = !isExpired && canManageChannels;
 
   return (
     <>
@@ -45,8 +47,8 @@ const GiftCardUpdatePageHeader: React.FC = () => {
       >
         <GiftCardEnableDisableSection />
         <HorizontalSpacer />
-        {!isExpired && (
-          <Button variant="primary" onClick={openResendCodeDialog}>
+        {canResendCode && (
+          <Button variant="primary" onClick={openResendCodeDialog} data-test-id="resend-code">
             {intl.formatMessage(messages.resendButtonLabel)}
           </Button>
         )}

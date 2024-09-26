@@ -1,24 +1,20 @@
 // @ts-strict-ignore
-import { useUser } from "@dashboard/auth";
 import { ConfirmButton } from "@dashboard/components/ConfirmButton";
 import PriceField from "@dashboard/components/PriceField";
-import { hasPermissions } from "@dashboard/components/RequirePermissions";
 import {
   OrderDetailsFragment,
-  OrderDetailsWithMetadataDocument,
-  PermissionEnum,
   TransactionActionEnum,
   TransactionItemFragment,
-  useOrderSendRefundMutation,
 } from "@dashboard/graphql";
-import { Typography } from "@material-ui/core";
 import { useId } from "@reach/auto-id";
 import { Button, makeStyles } from "@saleor/macaw-ui";
+import { Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import OrderTransaction from "../../OrderTransaction";
 import { refundPageMessages } from "../messages";
+import { useOrderSendRefund } from "./useOrderSendRefund";
 
 interface TransactionCardProps {
   transaction: TransactionItemFragment;
@@ -56,56 +52,37 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
   const intl = useIntl();
   const id = useId();
 
-  const user = useUser();
-  const isStaffUser = hasPermissions(user?.user?.userPermissions ?? [], [
-    PermissionEnum.MANAGE_STAFF,
-  ]);
-
   const [value, setValue] = React.useState<number | undefined>();
 
-  const [sendRefund, { status, loading, error, data }] =
-    useOrderSendRefundMutation({
-      refetchQueries: [
-        {
-          query: OrderDetailsWithMetadataDocument,
-          variables: { id: orderId, isStaffUser },
-        },
-      ],
-      variables: {
-        transactionId: transaction.id,
-        amount: value,
-      },
-    });
+  const { data, error, loading, status, sendRefund } = useOrderSendRefund({
+    transactionId: transaction.id,
+    orderId,
+    amount: value,
+  });
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
     e.preventDefault();
+
     if (typeof value === "number" && transaction?.id) {
       await sendRefund();
     }
   };
-
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = e => {
     const value = parseFloat(e.target.value);
+
     if (!Number.isNaN(value)) {
       setValue(value);
     } else {
       setValue(undefined);
     }
   };
-
   const setMaxRefundValue = () => {
-    setValue(
-      Math.min(totalRemainingGrant.amount, transaction.chargedAmount.amount),
-    );
+    setValue(Math.min(totalRemainingGrant.amount, transaction.chargedAmount.amount));
   };
-
   const inputId = `refund-amount-${id}`;
   const errorId = `refund-error-${id}`;
   const submitError = error || data?.transactionRequestAction?.errors?.[0];
-
-  const canBeRefunded = transaction.actions.includes(
-    TransactionActionEnum.REFUND,
-  );
+  const canBeRefunded = transaction.actions.includes(TransactionActionEnum.REFUND);
 
   return (
     <OrderTransaction
@@ -122,7 +99,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
               </Button>
               <PriceField
                 id={inputId}
-                aria-invalid={!!submitError ? "true" : "false"}
+                aria-invalid={submitError ? "true" : "false"}
                 aria-describedby={errorId}
                 disabled={loading}
                 className={classes.input}
@@ -142,9 +119,9 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
               </ConfirmButton>
             </form>
             {submitError && (
-              <Typography id={errorId} color="error" variant="body2">
+              <Text id={errorId} color="critical1" fontSize={3}>
                 {submitError.message}
-              </Typography>
+              </Text>
             )}
           </div>
         )

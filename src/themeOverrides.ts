@@ -13,7 +13,7 @@ export const themeOverrides: Partial<Theme> = {
     MuiCard: {
       root: {
         border: 0,
-        backgroundColor: vars.colors.background.surfaceNeutralPlain,
+        backgroundColor: vars.colors.background.default1,
       },
     },
     MuiTypography: {
@@ -27,19 +27,19 @@ export const themeOverrides: Partial<Theme> = {
     },
     MuiTextField: {
       root: {
-        backgroundColor: vars.colors.background.surfaceNeutralPlain,
+        backgroundColor: vars.colors.background.default1,
       },
     },
     MuiInputBase: {
       root: {
-        borderColor: vars.colors.border.neutralPlain,
+        borderColor: vars.colors.border.default1,
       },
     },
     MuiOutlinedInput: {
       root: {
-        backgroundColor: vars.colors.background.surfaceNeutralPlain,
-        borderColor: vars.colors.border.neutralPlain,
-        color: vars.colors.foreground.textNeutralDefault,
+        backgroundColor: vars.colors.background.default1,
+        borderColor: vars.colors.border.default1,
+        color: vars.colors.text.default1,
         "&:hover": {
           boxShadow: "none !important",
         },
@@ -47,31 +47,31 @@ export const themeOverrides: Partial<Theme> = {
     },
     MuiInputLabel: {
       root: {
-        color: vars.colors.foreground.textNeutralDefault,
+        color: vars.colors.text.default1,
       },
     },
     MuiCardHeader: {
       root: {
         paddingRight: vars.spacing[8],
-        backgroundColor: vars.colors.background.surfaceNeutralPlain,
+        backgroundColor: vars.colors.background.default1,
       },
       title: {
-        fontSize: vars.fontSize.bodyEmpLarge,
+        fontSize: vars.fontSize[5],
         // MUI it strictly typed to be a number, but we are passing CSS variable here
-        fontWeight: vars.fontWeight.bodyEmpLarge as unknown as number,
-        lineHeight: vars.lineHeight.bodyEmpLarge,
-        letterSpacing: vars.letterSpacing.bodyEmpLarge,
+        fontWeight: vars.fontWeight.medium as unknown as number,
+        lineHeight: vars.lineHeight[5],
+        letterSpacing: vars.letterSpacing[5],
       },
     },
     MuiCardContent: {
       root: {
-        backgroundColor: vars.colors.background.plain,
+        backgroundColor: vars.colors.background.default1,
       },
     },
     MuiPaper: {
       root: {
-        backgroundColor: vars.colors.background.plain,
-        color: vars.colors.foreground.textNeutralDefault,
+        backgroundColor: vars.colors.background.default1,
+        color: vars.colors.text.default1,
       },
     },
     MuiTable: {
@@ -81,7 +81,7 @@ export const themeOverrides: Partial<Theme> = {
     },
     MuiTableCell: {
       root: {
-        borderBottomColor: vars.colors.border.neutralPlain,
+        borderBottomColor: vars.colors.border.default1,
       },
     },
     MuiIconButton: {
@@ -91,23 +91,23 @@ export const themeOverrides: Partial<Theme> = {
     },
     MuiCardActions: {
       root: {
-        backgroundColor: vars.colors.background.plain,
+        backgroundColor: vars.colors.background.default1,
         paddingLeft: 0,
         paddingRight: 0,
       },
     },
     MuiFormHelperText: {
       root: {
-        backgroundColor: vars.colors.background.plain,
+        backgroundColor: vars.colors.background.default1,
       },
     },
     MuiDialogTitle: {
       root: {
-        fontSize: vars.fontSize.bodyEmpLarge,
+        fontSize: vars.fontSize[5],
         // MUI it strictly typed to be a number, but we are passing CSS variable here
-        fontWeight: vars.fontWeight.bodyEmpLarge as unknown as number,
-        lineHeight: vars.lineHeight.bodyEmpLarge,
-        letterSpacing: vars.letterSpacing.bodyEmpLarge,
+        fontWeight: vars.fontWeight.medium as unknown as number,
+        lineHeight: vars.lineHeight[5],
+        letterSpacing: vars.letterSpacing[5],
       },
     },
   },
@@ -118,14 +118,14 @@ export const paletteOverrides: Themes = {
     ...light,
     background: {
       ...light.background,
-      default: themes.defaultLight.colors.background.plain,
+      default: themes.defaultLight.colors.background.default1,
     },
   },
   dark: {
     ...dark,
     background: {
       ...dark.background,
-      default: themes.defaultDark.colors.background.plain,
+      default: themes.defaultDark.colors.background.default1,
     },
   },
 };

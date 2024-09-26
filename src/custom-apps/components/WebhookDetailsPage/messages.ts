@@ -19,18 +19,22 @@ export const messages = defineMessages({
     defaultMessage: "Create Webhook",
     description: "header",
   },
+  subscriptionQueryBlankError: {
+    id: "aMWJ7/",
+    defaultMessage: "This field cannot be blank for a new webhook",
+    description: "local error",
+  },
 });
 
-export const getHeaderTitle = (
-  intl: IntlShape,
-  webhook?: WebhookDetailsQuery["webhook"],
-) => {
+export const getHeaderTitle = (intl: IntlShape, webhook?: WebhookDetailsQuery["webhook"]) => {
   if (!webhook) {
     return intl.formatMessage(messages.headerCreate);
   }
+
   if (isUnnamed(webhook)) {
     return intl.formatMessage(messages.header);
   }
+
   return intl.formatMessage(messages.headerNamed, {
     webhookName: getStringOrPlaceholder(webhook?.name),
   });

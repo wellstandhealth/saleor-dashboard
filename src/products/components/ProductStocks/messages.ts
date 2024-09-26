@@ -27,8 +27,7 @@ export const messages = defineMessages({
   },
   trackInventoryDescription: {
     id: "Wyl25+",
-    defaultMessage:
-      "Active inventory tracking will automatically calculate changes of stock",
+    defaultMessage: "Active inventory tracking will automatically calculate changes of stock",
     description: "product inventory, checkbox description",
   },
   quantity: {
@@ -121,5 +120,15 @@ export const messages = defineMessages({
     id: "MNZY28",
     defaultMessage: "Channel threshold",
     description: "table column header",
+  },
+  warehouseMessageVariantOnCreate: {
+    id: "BaxGjT",
+    defaultMessage: "Assigning the stocks will be possible after the variant is saved.",
+    description: "variant stocks section subtitle",
+  },
+  warehouseMessageProductOnCreate: {
+    id: "lhfPkc",
+    defaultMessage: "Assigning the stocks will be possible after the product is saved.",
+    description: "variant stocks section subtitle",
   },
 });

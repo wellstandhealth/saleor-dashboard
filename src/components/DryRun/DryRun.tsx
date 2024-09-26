@@ -1,28 +1,19 @@
 // @ts-strict-ignore
 import Grid from "@dashboard/components/Grid";
+import { DashboardModal } from "@dashboard/components/Modal";
 import { useStyles } from "@dashboard/custom-apps/components/WebhookEvents/styles";
-import {
-  useTriggerWebhookDryRunMutation,
-  WebhookEventTypeSyncEnum,
-} from "@dashboard/graphql";
-import {
-  capitalize,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  Typography,
-} from "@material-ui/core";
+import { useTriggerWebhookDryRunMutation, WebhookEventTypeSyncEnum } from "@dashboard/graphql";
+import { capitalize } from "@material-ui/core";
 import {
   Alert,
   Button,
-  DialogHeader,
   List,
   ListBody,
   ListHeader,
   ListItem,
   ListItemCell,
 } from "@saleor/macaw-ui";
+import { Text } from "@saleor/macaw-ui-next";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -55,15 +46,14 @@ const DryRun: React.FC<DryRunProps> = ({
   );
   const unavailableObjects = getUnavailableObjects(query);
   const [object, setObject] = useState<string | null>(null);
-
   const dryRun = async () => {
     const { data } = await triggerWebhookDryRun({
       variables: { objectId, query },
     });
+
     setResult(JSON.stringify(JSON.parse(data.webhookDryRun.payload), null, 2));
     closeDialog();
   };
-
   const closeDialog = () => {
     setShowDialog(false);
     setObjectId(null);
@@ -77,42 +67,38 @@ const DryRun: React.FC<DryRunProps> = ({
 
   if (syncEvents.length > 0) {
     return (
-      <Dialog open={showDialog} fullWidth maxWidth="md" data-test-id="dry-run">
-        <DialogHeader onClose={closeDialog}>
-          {intl.formatMessage(messages.header)}
-        </DialogHeader>
-        <DialogContent style={{ overflow: "scroll" }}>
+      <DashboardModal onChange={closeDialog} open={showDialog}>
+        <DashboardModal.Content size="lg" data-test-id="dry-run">
+          <DashboardModal.Title display="flex" justifyContent="space-between">
+            {intl.formatMessage(messages.header)}
+            <DashboardModal.Close onClose={closeDialog} />
+          </DashboardModal.Title>
+
           <Alert variant="error" close={false}>
-            <Typography>
-              {intl.formatMessage(messages.unavailableSyncEvents)}
-            </Typography>
+            <Text>{intl.formatMessage(messages.unavailableSyncEvents)}</Text>
           </Alert>
-        </DialogContent>
-      </Dialog>
+        </DashboardModal.Content>
+      </DashboardModal>
     );
   }
 
   return (
-    <Dialog open={showDialog} fullWidth maxWidth="md" data-test-id="dry-run">
-      <DialogHeader onClose={closeDialog}>
-        {intl.formatMessage(messages.header)}
-      </DialogHeader>
-      <DialogContent style={{ overflow: "scroll" }}>
-        <DialogContentText>
-          {intl.formatMessage(messages.selectObject)}
-        </DialogContentText>
+    <DashboardModal onChange={closeDialog} open={showDialog}>
+      <DashboardModal.Content size="lg" data-test-id="dry-run">
+        <DashboardModal.Title display="flex" justifyContent="space-between">
+          {intl.formatMessage(messages.header)}
+          <DashboardModal.Close onClose={closeDialog} />
+        </DashboardModal.Title>
+
+        <Text>{intl.formatMessage(messages.selectObject)}</Text>
 
         {!!unavailableObjects.length && (
-          <Alert
-            variant="warning"
-            close={false}
-            className="remove-icon-background"
-          >
-            <Typography>
+          <Alert variant="warning" close={false} className="remove-icon-background">
+            <Text>
               {intl.formatMessage(messages.unavailableEvents)}
               <br />
               <strong>{unavailableObjects.join(", ")}</strong>
-            </Typography>
+            </Text>
           </Alert>
         )}
 
@@ -128,23 +114,15 @@ const DryRun: React.FC<DryRunProps> = ({
                 </ListItem>
               </ListHeader>
               <ListBody className={classes.listBody}>
-                {!availableObjects.length && (
-                  <Typography>
-                    {intl.formatMessage(messages.noObjects)}
-                  </Typography>
-                )}
+                {!availableObjects.length && <Text>{intl.formatMessage(messages.noObjects)}</Text>}
                 {availableObjects.map((object, idx) => (
                   <ListItem
                     key={idx}
                     className={classes.listItem}
-                    onClick={() =>
-                      setObject(object.split(" ").join("_").toUpperCase())
-                    }
+                    onClick={() => setObject(object.split(" ").join("_").toUpperCase())}
                   >
                     <ListItemCell className={classes.listItemCell}>
-                      <strong>
-                        {capitalize(object.replaceAll("_", " ").toLowerCase())}
-                      </strong>
+                      <strong>{capitalize(object.replaceAll("_", " ").toLowerCase())}</strong>
                     </ListItemCell>
                     <ListItemCell></ListItemCell>
                   </ListItem>
@@ -154,11 +132,7 @@ const DryRun: React.FC<DryRunProps> = ({
           </div>
           <div className={classes.eventsWrapper}>
             {object ? (
-              <DryRunItemsList
-                setObjectId={setObjectId}
-                objectId={objectId}
-                object={object}
-              />
+              <DryRunItemsList setObjectId={setObjectId} objectId={objectId} object={object} />
             ) : (
               <>
                 <ListHeader>
@@ -169,26 +143,20 @@ const DryRun: React.FC<DryRunProps> = ({
                   </ListItem>
                 </ListHeader>
                 <ListBody className={classes.listBody}>
-                  <Typography>
-                    {intl.formatMessage(messages.itemsDefaultMessage)}
-                  </Typography>
+                  <Text>{intl.formatMessage(messages.itemsDefaultMessage)}</Text>
                 </ListBody>
               </>
             )}
           </div>
         </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          color="primary"
-          variant="primary"
-          onClick={dryRun}
-          disabled={!object}
-        >
-          {intl.formatMessage(messages.run)}
-        </Button>
-      </DialogActions>
-    </Dialog>
+
+        <DashboardModal.Actions>
+          <Button color="primary" variant="primary" onClick={dryRun} disabled={!object}>
+            {intl.formatMessage(messages.run)}
+          </Button>
+        </DashboardModal.Actions>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
 

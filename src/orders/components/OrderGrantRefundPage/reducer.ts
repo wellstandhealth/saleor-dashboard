@@ -8,6 +8,7 @@ import { exhaustiveCheck } from "@dashboard/utils/ts";
 import { getLineAvailableQuantity } from "./utils";
 
 export interface ReducerOrderLine {
+  orderLineId: string;
   selectedQuantity: number;
   availableQuantity: number;
   initialQuantity?: number;
@@ -54,11 +55,9 @@ export const getGrantRefundReducerInitialState = (
   grantedRefund?: OrderDetailsGrantedRefundFragment,
 ): GrantRefundState => {
   const toGrantRefundLine = createToGrantRefundLineMap(order, grantedRefund);
-
   const unfulfilledLines = order?.lines
     .filter(line => line.quantityToFulfill > 0)
     .map(toGrantRefundLine);
-
   const fulfilmentLines = order.fulfillments
     .flatMap(fulfilment => fulfilment.lines)
     .map(toGrantRefundLine);
@@ -100,6 +99,7 @@ export function grantRefundReducer(
 
       action.lines.forEach(line => {
         const currentLine = state.lines.get(line.id);
+
         newLines.set(line.id, {
           ...currentLine,
           isDirty: line.quantity !== currentLine.initialQuantity,
@@ -144,12 +144,12 @@ function createToGrantRefundLineMap(
       | OrderDetailsGrantRefundFragment["fulfillments"][0]["lines"][0],
   ): GrantRefundLineKeyValue => {
     const initialQuantity =
-      grantedRefund?.lines?.find(initLine => initLine.orderLine.id === line.id)
-        ?.quantity ?? 0;
+      grantedRefund?.lines?.find(initLine => initLine.orderLine.id === line.id)?.quantity ?? 0;
 
     return [
       line.id,
       {
+        orderLineId: "orderLine" in line ? line.orderLine.id : line.id,
         isDirty: false,
         availableQuantity: getLineAvailableQuantity({
           lineId: line.id,
@@ -158,9 +158,7 @@ function createToGrantRefundLineMap(
           grantRefundId: grantedRefund?.id,
         }),
         unitPrice:
-          "orderLine" in line
-            ? line.orderLine.unitPrice.gross.amount
-            : line.unitPrice.gross.amount,
+          "orderLine" in line ? line.orderLine.unitPrice.gross.amount : line.unitPrice.gross.amount,
         selectedQuantity: initialQuantity,
         initialQuantity,
       },

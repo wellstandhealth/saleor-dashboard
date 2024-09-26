@@ -32,7 +32,7 @@ export const FilterPresetItem = ({
         onMouseLeave={() => setHasHover(false)}
         data-test-id="preset"
       >
-        <Text ellipsis variant={isActive ? "bodyStrong" : "body"}>
+        <Text ellipsis fontWeight={isActive ? "bold" : "regular"}>
           {children}
         </Text>
         {hasHover && (
@@ -50,9 +50,9 @@ export const FilterPresetItem = ({
             <RemoveIcon
               data-test-id="preset-delete-button"
               color={{
-                default: "iconNeutralSubdued",
-                hover: "iconNeutralPlain",
-                focusVisible: "iconNeutralPlain",
+                default: "default2",
+                hover: "default1",
+                focusVisible: "default1",
               }}
             />
           </Box>

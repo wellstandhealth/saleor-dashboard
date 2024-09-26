@@ -1,32 +1,15 @@
 import { Collection } from "@dashboard/collections/types";
 import { CollectionChannels } from "@dashboard/components/ChannelsAvailabilityDropdown/utils";
-import { COLOR_WARNING } from "@dashboard/misc";
-import { ThemeTokensValues } from "@saleor/macaw-ui-next";
 import { IntlShape } from "react-intl";
 
-import {
-  getAvailablilityLabel,
-  getAvailablilityLabelWhenSelectedChannel,
-} from "./datagrid";
-
-const theme = {
-  colors: {
-    background: {
-      surfaceCriticalDepressed: "surfaceCriticalDepressed",
-      surfaceBrandDepressed: "surfaceBrandDepressed",
-      decorativeSurfaceSubdued2: "decorativeSurfaceSubdued2",
-      surfaceBrandSubdued: "surfaceBrandSubdued",
-    },
-  },
-} as ThemeTokensValues;
+import { getAvailabilityLabel, getAvailabilityLabelWhenSelectedChannel } from "./datagrid";
 
 const currentTheme = "defaultLight";
-
 const intl = {
   formatMessage: jest.fn(x => x.defaultMessage),
 } as unknown as IntlShape;
 
-describe("getAvailablilityLabelWhenSelectedChannel", () => {
+describe("getAvailabilityLabelWhenSelectedChannel", () => {
   it("should return published label when channel is active", () => {
     // Arrange
     const channel = {
@@ -37,24 +20,17 @@ describe("getAvailablilityLabelWhenSelectedChannel", () => {
         name: "Channel",
       },
       isPublished: true,
-      publicationDate: null,
+      publishedAt: null,
     } as CollectionChannels;
-
     // Act;
-    const result = getAvailablilityLabelWhenSelectedChannel(
-      channel,
-      intl,
-      currentTheme,
-      theme,
-    );
+    const result = getAvailabilityLabelWhenSelectedChannel(channel, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: "decorativeSurfaceSubdued2",
+      color: "#d7f5d7",
       label: "Published",
     });
   });
-
   it("should return unpublished label when channel is not active", () => {
     // Arrange
     const channel = {
@@ -65,24 +41,17 @@ describe("getAvailablilityLabelWhenSelectedChannel", () => {
         name: "Channel",
       },
       isPublished: false,
-      publicationDate: null,
+      publishedAt: null,
     } as CollectionChannels;
-
     // Act;
-    const result = getAvailablilityLabelWhenSelectedChannel(
-      channel,
-      intl,
-      currentTheme,
-      theme,
-    );
+    const result = getAvailabilityLabelWhenSelectedChannel(channel, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: "surfaceCriticalDepressed",
+      color: "#ffdeea",
       label: "Unpublished",
     });
   });
-
   it("should return Scheduled to publish label when channel is not active but has scheduled dat", () => {
     // Arrange
     const channel = {
@@ -93,42 +62,33 @@ describe("getAvailablilityLabelWhenSelectedChannel", () => {
         name: "Channel",
       },
       isPublished: false,
-      publicationDate: "2021-09-09T12:00:00+00:00",
+      publishedAt: "2021-09-09T12:00:00+00:00",
     } as CollectionChannels;
-
     // Act;
-    const result = getAvailablilityLabelWhenSelectedChannel(
-      channel,
-      intl,
-      currentTheme,
-      theme,
-    );
+    const result = getAvailabilityLabelWhenSelectedChannel(channel, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: COLOR_WARNING,
+      color: "#ffe6c8",
       label: "Scheduled to publish",
     });
   });
 });
-
-describe("getAvailablilityLabel", () => {
+describe("getAvailabilityLabel", () => {
   it("should return no channels label when there is not channels in collection", () => {
     // Arrange
     const collection = {
       channelListings: [],
     } as unknown as Collection;
-
     // Act
-    const result = getAvailablilityLabel(collection, intl, currentTheme, theme);
+    const result = getAvailabilityLabel(collection, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: "surfaceCriticalDepressed",
+      color: "#ffdeea",
       label: "No channels",
     });
   });
-
   it("should return label with color when there are some channels in collection and are active", () => {
     // Arrange
     const collection = {
@@ -141,22 +101,19 @@ describe("getAvailablilityLabel", () => {
             name: "Channel",
           },
           isPublished: true,
-          publicationDate: null,
+          publishedAt: null,
         },
       ],
     } as unknown as Collection;
-
     // Act
-    const result = getAvailablilityLabel(collection, intl, currentTheme, theme);
+    const result = getAvailabilityLabel(collection, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: "decorativeSurfaceSubdued2",
-      label:
-        "{channelCount} {channelCount,plural, =1 {Channel} other {Channels}}",
+      color: "#d7f5d7",
+      label: "{channelCount} {channelCount,plural, =1 {Channel} other {Channels}}",
     });
   });
-
   it("should return label with error color when there are some channels in collection but are not active", () => {
     // Arrange
     const collection = {
@@ -169,19 +126,17 @@ describe("getAvailablilityLabel", () => {
             name: "Channel",
           },
           isPublished: false,
-          publicationDate: null,
+          publishedAt: null,
         },
       ],
     } as unknown as Collection;
-
     // Act
-    const result = getAvailablilityLabel(collection, intl, currentTheme, theme);
+    const result = getAvailabilityLabel(collection, intl, currentTheme);
 
     // Assert
     expect(result).toEqual({
-      color: "surfaceCriticalDepressed",
-      label:
-        "{channelCount} {channelCount,plural, =1 {Channel} other {Channels}}",
+      color: "#ffdeea",
+      label: "{channelCount} {channelCount,plural, =1 {Channel} other {Channels}}",
     });
   });
 });

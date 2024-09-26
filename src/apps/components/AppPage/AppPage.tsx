@@ -1,8 +1,4 @@
-// @ts-strict-ignore
-import {
-  borderHeight,
-  topBarHeight,
-} from "@dashboard/components/AppLayout/consts";
+import { borderHeight, topBarHeight } from "@dashboard/components/AppLayout/consts";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { APP_VERSION } from "@dashboard/config";
 import { AppQuery } from "@dashboard/graphql";
@@ -20,12 +16,7 @@ export interface AppPageProps {
   refetch?: () => void;
 }
 
-export const AppPage: React.FC<AppPageProps> = ({
-  data,
-  url,
-  onError,
-  refetch,
-}) => {
+export const AppPage: React.FC<AppPageProps> = ({ data, url, onError, refetch }) => {
   const shop = useShop();
 
   /**
@@ -38,12 +29,13 @@ export const AppPage: React.FC<AppPageProps> = ({
   return (
     <DetailPageLayout gridTemplateColumns={1} withSavebar={false}>
       <AppPageNav
-        appId={data?.id}
+        appId={data?.id || ""}
         name={data?.name}
         supportUrl={data?.supportUrl}
         homepageUrl={data?.homepageUrl}
         author={data?.author}
         appLogoUrl={data?.brand?.logo.default}
+        showMangeAppButton={true}
       />
       <DetailPageLayout.Content>
         <Box

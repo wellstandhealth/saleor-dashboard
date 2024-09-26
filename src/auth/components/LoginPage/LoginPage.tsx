@@ -1,18 +1,12 @@
-// @ts-strict-ignore
 import { UserContextError } from "@dashboard/auth/types";
 import { passwordResetUrl } from "@dashboard/auth/urls";
-import { Button } from "@dashboard/components/Button";
 import { FormSpacer } from "@dashboard/components/FormSpacer";
 import { AvailableExternalAuthenticationsQuery } from "@dashboard/graphql";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import { commonMessages } from "@dashboard/intl";
-import {
-  CircularProgress,
-  Divider,
-  TextField,
-  Typography,
-} from "@material-ui/core";
+import { CircularProgress, Divider, TextField } from "@material-ui/core";
 import { EyeIcon, IconButton } from "@saleor/macaw-ui";
+import { Box, Button, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -27,7 +21,7 @@ export interface LoginCardProps {
   loading: boolean;
   externalAuthentications?: AvailableExternalAuthenticationsQuery["shop"]["availableExternalAuthentications"];
   onExternalAuthentication: (pluginId: string) => void;
-  onSubmit?: (event: LoginFormData) => SubmitPromise;
+  onSubmit: (event: LoginFormData) => SubmitPromise;
 }
 
 const LoginPage: React.FC<LoginCardProps> = props => {
@@ -39,7 +33,6 @@ const LoginPage: React.FC<LoginCardProps> = props => {
     onExternalAuthentication,
     onSubmit,
   } = props;
-
   const classes = useStyles(props);
   const intl = useIntl();
   const [showPassword, setShowPassword] = React.useState(false);
@@ -55,22 +48,22 @@ const LoginPage: React.FC<LoginCardProps> = props => {
   return (
     <LoginForm onSubmit={onSubmit}>
       {({ change: handleChange, data, submit }) => (
-        <>
-          <Typography variant="h3" className={classes.header}>
-            <FormattedMessage
-              id="vzgZ3U"
-              defaultMessage="Sign In"
-              description="card header"
-            />
-          </Typography>
+        <Box display="flex" flexDirection="column" alignItems="flex-start" width="100%">
+          <Text size={6} fontWeight="bold" lineHeight={3} marginBottom={4}>
+            <FormattedMessage id="vzgZ3U" defaultMessage="Sign In" description="card header" />
+          </Text>
           {errors.map(error => (
-            <div
-              className={classes.panel}
+            <Box
+              borderRadius={4}
+              padding={4}
+              backgroundColor="critical1"
+              width="100%"
+              marginBottom={2}
               key={error}
               data-test-id="login-error-message"
             >
-              {getErrorMessage(error, intl)}
-            </div>
+              <Text>{getErrorMessage(error, intl)}</Text>
+            </Box>
           ))}
           <TextField
             autoFocus
@@ -116,11 +109,12 @@ const LoginPage: React.FC<LoginCardProps> = props => {
               <EyeIcon />
             </IconButton>
           </div>
-          <Typography
-            component={Link}
+          <Text
+            // @ts-expect-error - to fix in macaw-ui
+            as={Link}
             className={classes.link}
             to={passwordResetUrl}
-            variant="body2"
+            fontSize={3}
             data-test-id="reset-password-link"
           >
             <FormattedMessage
@@ -128,21 +122,17 @@ const LoginPage: React.FC<LoginCardProps> = props => {
               defaultMessage="Forgot password?"
               description="description"
             />
-          </Typography>
+          </Text>
           <div className={classes.buttonContainer}>
             <Button
-              className={classes.loginButton}
+              width="100%"
               disabled={disabled}
               variant="primary"
               onClick={submit}
               type="submit"
               data-test-id="submit"
             >
-              <FormattedMessage
-                id="AubJ/S"
-                defaultMessage="Sign in"
-                description="button"
-              />
+              <FormattedMessage id="AubJ/S" defaultMessage="Sign in" description="button" />
             </Button>
           </div>
           {externalAuthentications.length > 0 && (
@@ -150,24 +140,22 @@ const LoginPage: React.FC<LoginCardProps> = props => {
               <FormSpacer />
               <Divider />
               <FormSpacer />
-              <Typography>
+              <Text>
                 <FormattedMessage
                   id="aFU0vm"
                   defaultMessage="or continue with"
                   description="description"
                 />
-              </Typography>
+              </Text>
             </>
           )}
           {externalAuthentications.map(externalAuthentication => (
             <React.Fragment key={externalAuthentication.id}>
               <FormSpacer />
               <Button
-                fullWidth
+                width="100%"
                 variant="secondary"
-                onClick={() =>
-                  onExternalAuthentication(externalAuthentication.id)
-                }
+                onClick={() => onExternalAuthentication(externalAuthentication.id)}
                 data-test-id="external-authentication"
                 disabled={disabled}
               >
@@ -175,10 +163,11 @@ const LoginPage: React.FC<LoginCardProps> = props => {
               </Button>
             </React.Fragment>
           ))}
-        </>
+        </Box>
       )}
     </LoginForm>
   );
 };
+
 LoginPage.displayName = "LoginPage";
 export default LoginPage;

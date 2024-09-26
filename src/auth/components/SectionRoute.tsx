@@ -1,6 +1,7 @@
+import { Route } from "@dashboard/components/Router";
 import { PermissionEnum } from "@dashboard/graphql";
 import React from "react";
-import { Route, RouteProps } from "react-router-dom";
+import { RouteProps } from "react-router-dom";
 
 import NotFound from "../../NotFound";
 import { useUser } from "..";
@@ -33,10 +34,10 @@ export const SectionRoute: React.FC<SectionRouteProps> = ({
     }
 
     if (matchAll(matchPermission)) {
-      return hasAllPermissions(permissions, user);
+      return hasAllPermissions(permissions, user!);
     }
 
-    return hasAnyPermissions(permissions, user);
+    return hasAnyPermissions(permissions, user!);
   };
 
   return hasSectionPermissions() ? <Route {...props} /> : <NotFound />;

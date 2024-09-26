@@ -45,19 +45,16 @@ export const AppDetailsPage: React.FC<AppDetailsPageProps> = ({
         onAppDeleteOpen={onAppDeleteOpen}
       />
       <Box
+        data-test-id="app-details-section"
         display="grid"
         gridTemplateColumns={{ desktop: 2, tablet: 2, mobile: 1 }}
       >
-        <Box
-          borderColor="neutralHighlight"
-          borderRightStyle={"solid"}
-          borderRightWidth={1}
-        >
+        <Box borderColor="default1" borderRightStyle={"solid"} borderRightWidth={1}>
           <AboutCard
             padding={6}
             borderBottomStyle="solid"
             borderBottomWidth={1}
-            borderColor="neutralHighlight"
+            borderColor="default1"
             aboutApp={data?.aboutApp}
             loading={loading}
           />
@@ -66,7 +63,7 @@ export const AppDetailsPage: React.FC<AppDetailsPageProps> = ({
             padding={6}
             borderBottomStyle="solid"
             borderBottomWidth={1}
-            borderColor="neutralHighlight"
+            borderColor="default1"
             permissions={data?.permissions}
             loading={loading}
           />
@@ -74,7 +71,7 @@ export const AppDetailsPage: React.FC<AppDetailsPageProps> = ({
             padding={6}
             borderBottomStyle="solid"
             borderBottomWidth={1}
-            borderColor="neutralHighlight"
+            borderColor="default1"
             dataPrivacyUrl={data?.dataPrivacyUrl}
             loading={loading}
           />

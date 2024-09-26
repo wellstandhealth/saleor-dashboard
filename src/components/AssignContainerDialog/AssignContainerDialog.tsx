@@ -1,19 +1,12 @@
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { DashboardModal } from "@dashboard/components/Modal";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import useSearchQuery from "@dashboard/hooks/useSearchQuery";
 import useScrollableDialogStyle from "@dashboard/styles/useScrollableDialogStyle";
 import { DialogProps, FetchMoreProps, Node } from "@dashboard/types";
-import {
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TableBody,
-  TableCell,
-  TextField,
-} from "@material-ui/core";
+import { CircularProgress, TableBody, TableCell, TextField } from "@material-ui/core";
+import { Box } from "@saleor/macaw-ui-next";
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -31,9 +24,7 @@ type Labels = Record<"confirmBtn" | "title" | "label" | "placeholder", string>;
 export interface Container extends Node {
   name: string;
 }
-export interface AssignContainerDialogProps
-  extends FetchMoreProps,
-    DialogProps {
+export interface AssignContainerDialogProps extends FetchMoreProps, DialogProps {
   confirmButtonState: ConfirmButtonTransitionState;
   containers: Container[];
   loading: boolean;
@@ -50,9 +41,7 @@ function handleContainerAssign(
 ) {
   if (isSelected) {
     setSelectedContainers(
-      selectedContainers.filter(
-        selectedContainer => selectedContainer.id !== container.id,
-      ),
+      selectedContainers.filter(selectedContainer => selectedContainer.id !== container.id),
     );
   } else {
     setSelectedContainers([...selectedContainers, container]);
@@ -60,7 +49,6 @@ function handleContainerAssign(
 }
 
 const scrollableTargetId = "assignContainerScrollableDialog";
-
 const AssignContainerDialog: React.FC<AssignContainerDialogProps> = props => {
   const {
     confirmButtonState,
@@ -76,29 +64,19 @@ const AssignContainerDialog: React.FC<AssignContainerDialogProps> = props => {
   } = props;
   const classes = useStyles(props);
   const scrollableDialogClasses = useScrollableDialogStyle({});
-
   const [query, onQueryChange, queryReset] = useSearchQuery(onFetch);
-  const [selectedContainers, setSelectedContainers] = React.useState<
-    Container[]
-  >([]);
-
+  const [selectedContainers, setSelectedContainers] = React.useState<Container[]>([]);
   const handleSubmit = () => onSubmit(selectedContainers);
-
   const handleClose = () => {
     queryReset();
     onClose();
   };
 
   return (
-    <Dialog
-      onClose={handleClose}
-      open={open}
-      classes={{ paper: scrollableDialogClasses.dialog }}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle disableTypography>{labels.title}</DialogTitle>
-      <DialogContent>
+    <DashboardModal onChange={handleClose} open={open}>
+      <DashboardModal.Content size="sm" __gridTemplateRows="auto auto 1fr auto">
+        <DashboardModal.Title>{labels.title}</DashboardModal.Title>
+
         <TextField
           name="query"
           value={query}
@@ -111,70 +89,68 @@ const AssignContainerDialog: React.FC<AssignContainerDialogProps> = props => {
             endAdornment: loading && <CircularProgress size={16} />,
           }}
         />
-      </DialogContent>
-      <DialogContent
-        className={scrollableDialogClasses.scrollArea}
-        id={scrollableTargetId}
-      >
-        <InfiniteScroll
-          dataLength={containers?.length}
-          next={onFetchMore}
-          hasMore={hasMore}
-          scrollThreshold="100px"
-          loader={
-            <div className={scrollableDialogClasses.loadMoreLoaderContainer}>
-              <CircularProgress size={16} />
-            </div>
-          }
-          scrollableTarget={scrollableTargetId}
-        >
-          <ResponsiveTable>
-            <TableBody>
-              {containers?.map(container => {
-                const isSelected = !!selectedContainers.find(
-                  selectedContainer => selectedContainer.id === container.id,
-                );
 
-                return (
-                  <TableRowLink key={container.id}>
-                    <TableCell
-                      padding="checkbox"
-                      className={classes.checkboxCell}
-                    >
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() =>
-                          handleContainerAssign(
-                            container,
-                            isSelected,
-                            selectedContainers,
-                            setSelectedContainers,
-                          )
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className={classes.wideCell}>
-                      {container.name}
-                    </TableCell>
-                  </TableRowLink>
-                );
-              })}
-            </TableBody>
-          </ResponsiveTable>
-        </InfiniteScroll>
-      </DialogContent>
-      <DialogActions>
-        <BackButton onClick={onClose} />
-        <ConfirmButton
-          transitionState={confirmButtonState}
-          type="submit"
-          onClick={handleSubmit}
-        >
-          {labels.confirmBtn}
-        </ConfirmButton>
-      </DialogActions>
-    </Dialog>
+        <Box className={scrollableDialogClasses.scrollArea} id={scrollableTargetId}>
+          <InfiniteScroll
+            dataLength={containers?.length}
+            next={onFetchMore}
+            hasMore={hasMore}
+            scrollThreshold="100px"
+            loader={
+              <div className={scrollableDialogClasses.loadMoreLoaderContainer}>
+                <CircularProgress size={16} />
+              </div>
+            }
+            scrollableTarget={scrollableTargetId}
+          >
+            <ResponsiveTable>
+              <TableBody>
+                {containers?.map(container => {
+                  const isSelected = !!selectedContainers.find(
+                    selectedContainer => selectedContainer.id === container.id,
+                  );
+
+                  return (
+                    <TableRowLink key={container.id} data-test-id="dialog-row">
+                      <TableCell padding="checkbox" className={classes.checkboxCell}>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() =>
+                            handleContainerAssign(
+                              container,
+                              isSelected,
+                              selectedContainers,
+                              setSelectedContainers,
+                            )
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className={classes.wideCell} data-test-id={container.name}>
+                        {container.name}
+                      </TableCell>
+                    </TableRowLink>
+                  );
+                })}
+              </TableBody>
+            </ResponsiveTable>
+          </InfiniteScroll>
+        </Box>
+
+        <DashboardModal.Actions>
+          <BackButton onClick={onClose} />
+          <ConfirmButton
+            data-test-id="assign-and-save-button"
+            transitionState={confirmButtonState}
+            type="submit"
+            onClick={handleSubmit}
+          >
+            {labels.confirmBtn}
+          </ConfirmButton>
+        </DashboardModal.Actions>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
+
 AssignContainerDialog.displayName = "AssignContainerDialog";
 export default AssignContainerDialog;

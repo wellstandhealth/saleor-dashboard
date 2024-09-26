@@ -1,11 +1,8 @@
 // @ts-strict-ignore
 import Checkbox from "@dashboard/components/Checkbox";
-import {
-  ConfirmButton,
-  ConfirmButtonTransitionState,
-} from "@dashboard/components/ConfirmButton";
+import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import FormSpacer from "@dashboard/components/FormSpacer";
-import VerticalSpacer from "@dashboard/components/VerticalSpacer";
+import { DashboardModal } from "@dashboard/components/Modal";
 import { AddressTypeInput } from "@dashboard/customers/types";
 import {
   AddressFragment,
@@ -21,15 +18,8 @@ import useModalDialogErrors from "@dashboard/hooks/useModalDialogErrors";
 import { buttonMessages } from "@dashboard/intl";
 import { getById, transformAddressToAddressInput } from "@dashboard/misc";
 import { mapCountriesToChoices } from "@dashboard/utils/maps";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  Divider,
-  FormControlLabel,
-  Typography,
-} from "@material-ui/core";
-import { DialogHeader } from "@saleor/macaw-ui";
+import { Divider, FormControlLabel } from "@material-ui/core";
+import { Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, MessageDescriptor, useIntl } from "react-intl";
 
@@ -40,17 +30,12 @@ import OrderCustomerAddressesEditForm, {
 import { dialogMessages } from "./messages";
 import OrderCustomerAddressEdit from "./OrderCustomerAddressEdit";
 import OrderCustomerAddressesSearch from "./OrderCustomerAddressesSearch";
-import { useStyles } from "./styles";
 import {
   AddressEditDialogVariant,
   OrderCustomerAddressesEditDialogOutput,
   OrderCustomerSearchAddressState,
 } from "./types";
-import {
-  getAddressEditProps,
-  hasPreSubmitErrors,
-  validateDefaultAddress,
-} from "./utils";
+import { getAddressEditProps, hasPreSubmitErrors, validateDefaultAddress } from "./utils";
 
 export interface OrderCustomerAddressesEditDialogProps {
   open: boolean;
@@ -65,19 +50,14 @@ export interface OrderCustomerAddressesEditDialogProps {
   defaultShippingAddress?: Node;
   defaultBillingAddress?: Node;
   onClose: () => any;
-  onConfirm: (
-    data: Partial<OrderCustomerAddressesEditDialogOutput>,
-  ) => SubmitPromise<any[]>;
+  onConfirm: (data: Partial<OrderCustomerAddressesEditDialogOutput>) => SubmitPromise<any[]>;
 }
 
 const defaultSearchState: OrderCustomerSearchAddressState = {
   open: false,
   type: undefined,
 };
-
-const OrderCustomerAddressesEditDialog: React.FC<
-  OrderCustomerAddressesEditDialogProps
-> = props => {
+const OrderCustomerAddressesEditDialog: React.FC<OrderCustomerAddressesEditDialogProps> = props => {
   const {
     open: defaultOpen,
     variant,
@@ -93,62 +73,45 @@ const OrderCustomerAddressesEditDialog: React.FC<
     orderShippingAddress,
     orderBillingAddress,
   } = props;
-
   const open = !loading && defaultOpen;
-
-  const classes = useStyles(props);
   const intl = useIntl();
-
-  const hasCustomerChanged =
-    variant === AddressEditDialogVariant.CHANGE_CUSTOMER;
-
-  const { errors: shippingValidationErrors, submit: handleShippingSubmit } =
-    useAddressValidation(address => address, AddressTypeEnum.SHIPPING);
-  const { errors: billingValidationErrors, submit: handleBillingSubmit } =
-    useAddressValidation(address => address, AddressTypeEnum.BILLING);
-
+  const hasCustomerChanged = variant === AddressEditDialogVariant.CHANGE_CUSTOMER;
+  const { errors: shippingValidationErrors, submit: handleShippingSubmit } = useAddressValidation(
+    address => address,
+    AddressTypeEnum.SHIPPING,
+  );
+  const { errors: billingValidationErrors, submit: handleBillingSubmit } = useAddressValidation(
+    address => address,
+    AddressTypeEnum.BILLING,
+  );
   const dialogErrors = useModalDialogErrors(
     [...errors, ...shippingValidationErrors, ...billingValidationErrors],
     open,
   );
-
-  const continueToSearchAddressesState = (
-    data: OrderCustomerAddressesEditFormData,
-  ): boolean => {
+  const continueToSearchAddressesState = (data: OrderCustomerAddressesEditFormData): boolean => {
     if (hasCustomerChanged || addressSearchState.open) {
       return false;
     }
+
     if (!customerAddresses.length) {
       return false;
     }
-    if (variant === AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS) {
-      return (
-        data.shippingAddressInputOption ===
-        AddressInputOptionEnum.CUSTOMER_ADDRESS
-      );
-    }
-    return (
-      data.billingAddressInputOption === AddressInputOptionEnum.CUSTOMER_ADDRESS
-    );
-  };
 
-  const getCustomerAddress = (
-    selectedCustomerAddressID: string,
-  ): AddressInput =>
-    transformAddressToAddressInput(
-      customerAddresses.find(getById(selectedCustomerAddressID)),
-    );
+    if (variant === AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS) {
+      return data.shippingAddressInputOption === AddressInputOptionEnum.CUSTOMER_ADDRESS;
+    }
+
+    return data.billingAddressInputOption === AddressInputOptionEnum.CUSTOMER_ADDRESS;
+  };
+  const getCustomerAddress = (selectedCustomerAddressID: string): AddressInput =>
+    transformAddressToAddressInput(customerAddresses.find(getById(selectedCustomerAddressID)));
   // async because handleShippingSubmit can return a promise
-  const handleAddressesSubmit = async (
-    data: OrderCustomerAddressesEditFormData,
-  ) => {
+  const handleAddressesSubmit = async (data: OrderCustomerAddressesEditFormData) => {
     const shippingAddress =
       customerAddresses.length > 0 &&
-      data.shippingAddressInputOption ===
-        AddressInputOptionEnum.CUSTOMER_ADDRESS
+      data.shippingAddressInputOption === AddressInputOptionEnum.CUSTOMER_ADDRESS
         ? getCustomerAddress(data.customerShippingAddress.id)
         : await handleShippingSubmit(data.shippingAddress);
-
     const billingAddress =
       customerAddresses.length > 0 &&
       data.billingAddressInputOption === AddressInputOptionEnum.CUSTOMER_ADDRESS
@@ -161,45 +124,51 @@ const OrderCustomerAddressesEditDialog: React.FC<
         ...(data.cloneAddress && { billingAddress: shippingAddress }),
       };
     }
+
     if (variant === AddressEditDialogVariant.CHANGE_BILLING_ADDRESS) {
       return {
         ...(data.cloneAddress && { shippingAddress: billingAddress }),
         billingAddress,
       };
     }
+
     return {
       shippingAddress,
       billingAddress: data.cloneAddress ? shippingAddress : billingAddress,
     };
   };
-
   const getDialogTitle = (): MessageDescriptor => {
     if (addressSearchState.open) {
       if (variant === AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS) {
         return dialogMessages.shippingTitle;
       }
+
       if (variant === AddressEditDialogVariant.CHANGE_BILLING_ADDRESS) {
         return dialogMessages.billingTitle;
       }
     }
+
     if (variant === AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS) {
       return dialogMessages.shippingChangeTitle;
     }
+
     if (variant === AddressEditDialogVariant.CHANGE_BILLING_ADDRESS) {
       return dialogMessages.billingChangeTitle;
     }
+
     return dialogMessages.customerChangeTitle;
   };
   const getDialogDescription = (): MessageDescriptor => {
     if (customerAddresses.length === 0) {
       return dialogMessages.noAddressDescription;
     }
+
     if (variant === AddressEditDialogVariant.CHANGE_CUSTOMER) {
       return dialogMessages.customerChangeDescription;
     }
+
     return dialogMessages.addressChangeDescription;
   };
-
   const handleContinue = (data: OrderCustomerAddressesEditFormData) => {
     if (continueToSearchAddressesState(data)) {
       setAddressSearchState({
@@ -209,27 +178,25 @@ const OrderCustomerAddressesEditDialog: React.FC<
             ? AddressTypeEnum.SHIPPING
             : AddressTypeEnum.BILLING,
       });
+
       return;
     }
+
     handleSubmit(data);
   };
   const handleSubmit = async (data: OrderCustomerAddressesEditFormData) => {
     const addressesInput = await handleAddressesSubmit(data);
+
     if (addressesInput && !hasPreSubmitErrors(addressesInput)) {
       await onConfirm(addressesInput as OrderCustomerAddressesEditDialogOutput);
       setAddressSearchState(defaultSearchState);
     }
-    return Promise.resolve([
-      ...shippingValidationErrors,
-      ...billingValidationErrors,
-    ]);
+
+    return Promise.resolve([...shippingValidationErrors, ...billingValidationErrors]);
   };
-
   const countryChoices = mapCountriesToChoices(countries);
-
   const [addressSearchState, setAddressSearchState] =
     React.useState<OrderCustomerSearchAddressState>(defaultSearchState);
-
   const validatedDefaultShippingAddress = validateDefaultAddress(
     defaultShippingAddress,
     customerAddresses,
@@ -238,99 +205,89 @@ const OrderCustomerAddressesEditDialog: React.FC<
     defaultBillingAddress,
     customerAddresses,
   );
-
   const addressEditCommonProps = {
     showCard: hasCustomerChanged,
     loading,
     countryChoices,
     customerAddresses,
   };
-
   const exitModal = () => {
     onClose();
     setAddressSearchState(defaultSearchState);
   };
 
   return (
-    <Dialog onClose={exitModal} open={open} fullWidth>
-      <DialogHeader onClose={exitModal}>
-        <FormattedMessage {...getDialogTitle()} />
-      </DialogHeader>
-      <OrderCustomerAddressesEditForm
-        countryChoices={countryChoices}
-        countries={countries}
-        defaultShippingAddress={validatedDefaultShippingAddress}
-        defaultBillingAddress={validatedDefaultBillingAddress}
-        defaultCloneAddress={hasCustomerChanged}
-        initial={{
-          shippingAddress: orderShippingAddress,
-          billingAddress: orderBillingAddress,
-        }}
-        onSubmit={handleContinue}
-      >
-        {({ change, data, handlers }) => {
-          const shippingAddressEditProps = getAddressEditProps(
-            "shipping",
-            data,
-            handlers,
-            change,
-            dialogErrors,
-            setAddressSearchState,
-            addressEditCommonProps,
-          );
-          const billingAddressEditProps = getAddressEditProps(
-            "billing",
-            data,
-            handlers,
-            change,
-            dialogErrors,
-            setAddressSearchState,
-            addressEditCommonProps,
-          );
-          return (
-            <>
-              {addressSearchState.open ? (
-                <OrderCustomerAddressesSearch
-                  openFromCustomerChange={hasCustomerChanged}
-                  type={addressSearchState?.type}
-                  cloneAddress={data.cloneAddress}
-                  formChange={change}
-                  transitionState={confirmButtonState}
-                  customerAddresses={customerAddresses}
-                  selectedCustomerAddressId={
-                    addressSearchState.type === AddressTypeEnum.SHIPPING
-                      ? data.customerShippingAddress?.id
-                      : data.customerBillingAddress?.id
-                  }
-                  onChangeCustomerShippingAddress={customerAddress =>
-                    handlers.changeCustomerAddress(
-                      customerAddress,
-                      "customerShippingAddress",
-                    )
-                  }
-                  onChangeCustomerBillingAddress={customerAddress =>
-                    handlers.changeCustomerAddress(
-                      customerAddress,
-                      "customerBillingAddress",
-                    )
-                  }
-                  exitSearch={() => setAddressSearchState(defaultSearchState)}
-                />
-              ) : (
-                <>
-                  <DialogContent className={classes.dialogContent}>
-                    <Typography>
+    <DashboardModal onChange={exitModal} open={open}>
+      <DashboardModal.Content size="sm">
+        <OrderCustomerAddressesEditForm
+          countryChoices={countryChoices}
+          countries={countries}
+          defaultShippingAddress={validatedDefaultShippingAddress}
+          defaultBillingAddress={validatedDefaultBillingAddress}
+          defaultCloneAddress={hasCustomerChanged}
+          initial={{
+            shippingAddress: orderShippingAddress,
+            billingAddress: orderBillingAddress,
+          }}
+          onSubmit={handleContinue}
+        >
+          {({ change, data, handlers, submit }) => {
+            const shippingAddressEditProps = getAddressEditProps(
+              "shipping",
+              data,
+              handlers,
+              change,
+              dialogErrors,
+              setAddressSearchState,
+              addressEditCommonProps,
+            );
+            const billingAddressEditProps = getAddressEditProps(
+              "billing",
+              data,
+              handlers,
+              change,
+              dialogErrors,
+              setAddressSearchState,
+              addressEditCommonProps,
+            );
+
+            return (
+              <DashboardModal.Grid>
+                <DashboardModal.Title>
+                  <FormattedMessage {...getDialogTitle()} />
+                </DashboardModal.Title>
+
+                {addressSearchState.open ? (
+                  <OrderCustomerAddressesSearch
+                    openFromCustomerChange={hasCustomerChanged}
+                    type={addressSearchState?.type}
+                    cloneAddress={data.cloneAddress}
+                    formChange={change}
+                    transitionState={confirmButtonState}
+                    customerAddresses={customerAddresses}
+                    selectedCustomerAddressId={
+                      addressSearchState.type === AddressTypeEnum.SHIPPING
+                        ? data.customerShippingAddress?.id
+                        : data.customerBillingAddress?.id
+                    }
+                    onChangeCustomerShippingAddress={customerAddress =>
+                      handlers.changeCustomerAddress(customerAddress, "customerShippingAddress")
+                    }
+                    onChangeCustomerBillingAddress={customerAddress =>
+                      handlers.changeCustomerAddress(customerAddress, "customerBillingAddress")
+                    }
+                    exitSearch={() => setAddressSearchState(defaultSearchState)}
+                  />
+                ) : (
+                  <>
+                    <Text>
                       <FormattedMessage {...getDialogDescription()} />
-                    </Typography>
-                    <VerticalSpacer />
+                    </Text>
+
                     {hasCustomerChanged && (
                       <>
-                        <OrderCustomerAddressEdit
-                          {...shippingAddressEditProps}
-                        />
-                        <FormSpacer />
+                        <OrderCustomerAddressEdit {...shippingAddressEditProps} />
                         <Divider />
-                        <FormSpacer />
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -347,43 +304,30 @@ const OrderCustomerAddressesEditDialog: React.FC<
                               data-test-id="billing-same-as-shipping"
                             />
                           }
-                          label={intl.formatMessage(
-                            dialogMessages.billingSameAsShipping,
-                          )}
+                          label={intl.formatMessage(dialogMessages.billingSameAsShipping)}
                         />
                         {!data.cloneAddress && (
                           <>
-                            <FormSpacer />
-                            <Typography>
+                            <Text>
                               {customerAddresses.length > 0 ? (
                                 <FormattedMessage
                                   {...dialogMessages.customerChangeBillingDescription}
                                 />
                               ) : (
-                                <FormattedMessage
-                                  {...dialogMessages.noAddressBillingDescription}
-                                />
+                                <FormattedMessage {...dialogMessages.noAddressBillingDescription} />
                               )}
-                            </Typography>
-                            <FormSpacer />
-                            <OrderCustomerAddressEdit
-                              {...billingAddressEditProps}
-                            />
+                            </Text>
+                            <OrderCustomerAddressEdit {...billingAddressEditProps} />
                           </>
                         )}
                       </>
                     )}
-                    {variant ===
-                      AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS && (
+
+                    {variant === AddressEditDialogVariant.CHANGE_SHIPPING_ADDRESS && (
                       <>
-                        <OrderCustomerAddressEdit
-                          {...shippingAddressEditProps}
-                        />
-                        {data.shippingAddressInputOption ===
-                          AddressInputOptionEnum.NEW_ADDRESS && (
+                        <OrderCustomerAddressEdit {...shippingAddressEditProps} />
+                        {data.shippingAddressInputOption === AddressInputOptionEnum.NEW_ADDRESS && (
                           <>
-                            <FormSpacer />
-                            <Divider />
                             <FormControlLabel
                               control={
                                 <Checkbox
@@ -400,22 +344,17 @@ const OrderCustomerAddressesEditDialog: React.FC<
                                   data-test-id="billing-same-as-shipping"
                                 />
                               }
-                              label={intl.formatMessage(
-                                dialogMessages.billingSameAsShipping,
-                              )}
+                              label={intl.formatMessage(dialogMessages.billingSameAsShipping)}
                             />
                           </>
                         )}
                       </>
                     )}
-                    {variant ===
-                      AddressEditDialogVariant.CHANGE_BILLING_ADDRESS && (
+
+                    {variant === AddressEditDialogVariant.CHANGE_BILLING_ADDRESS && (
                       <>
-                        <OrderCustomerAddressEdit
-                          {...billingAddressEditProps}
-                        />
-                        {data.shippingAddressInputOption ===
-                          AddressInputOptionEnum.NEW_ADDRESS && (
+                        <OrderCustomerAddressEdit {...billingAddressEditProps} />
+                        {data.shippingAddressInputOption === AddressInputOptionEnum.NEW_ADDRESS && (
                           <>
                             <FormSpacer />
                             <Divider />
@@ -435,39 +374,37 @@ const OrderCustomerAddressesEditDialog: React.FC<
                                   data-test-id="billing-same-as-shipping"
                                 />
                               }
-                              label={intl.formatMessage(
-                                dialogMessages.shippingSameAsBilling,
-                              )}
+                              label={intl.formatMessage(dialogMessages.shippingSameAsBilling)}
                             />
                           </>
                         )}
                       </>
                     )}
-                  </DialogContent>
-                  <DialogActions>
-                    <ConfirmButton
-                      transitionState={confirmButtonState}
-                      variant="primary"
-                      type="submit"
-                      data-test-id="submit"
-                    >
-                      <FormattedMessage
-                        {...(continueToSearchAddressesState(data)
-                          ? buttonMessages.continue
-                          : buttonMessages.save)}
-                      />
-                    </ConfirmButton>
-                  </DialogActions>
-                </>
-              )}
-            </>
-          );
-        }}
-      </OrderCustomerAddressesEditForm>
-    </Dialog>
+
+                    <DashboardModal.Actions>
+                      <ConfirmButton
+                        transitionState={confirmButtonState}
+                        variant="primary"
+                        onClick={submit}
+                        data-test-id="submit"
+                      >
+                        <FormattedMessage
+                          {...(continueToSearchAddressesState(data)
+                            ? buttonMessages.continue
+                            : buttonMessages.save)}
+                        />
+                      </ConfirmButton>
+                    </DashboardModal.Actions>
+                  </>
+                )}
+              </DashboardModal.Grid>
+            );
+          }}
+        </OrderCustomerAddressesEditForm>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
 
-OrderCustomerAddressesEditDialog.displayName =
-  "OrderCustomerAddressesEditDialog";
+OrderCustomerAddressesEditDialog.displayName = "OrderCustomerAddressesEditDialog";
 export default OrderCustomerAddressesEditDialog;

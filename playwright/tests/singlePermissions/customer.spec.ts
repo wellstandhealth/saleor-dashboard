@@ -5,8 +5,7 @@ import { MainMenuPage } from "@pages/mainMenuPage";
 import { expect, test } from "@playwright/test";
 
 test.use({ storageState: "playwright/.auth/customer.json" });
-
-test("TC: SALEOR_13 User should be able to navigate to customer list as a staff member using CUSTOMER permission", async ({
+test("TC: SALEOR_13 User should be able to navigate to customer list as a staff member using CUSTOMER permission @e2e", async ({
   page,
 }) => {
   const basePage = new BasePage(page);
@@ -17,5 +16,5 @@ test("TC: SALEOR_13 User should be able to navigate to customer list as a staff 
   await mainMenuPage.openCustomers();
   await expect(customersPage.createCustomerButton).toBeVisible();
   await basePage.expectGridToBeAttached();
-  await mainMenuPage.expectMenuItemsCount(2);
+  await mainMenuPage.expectMenuItemsCount(3);
 });

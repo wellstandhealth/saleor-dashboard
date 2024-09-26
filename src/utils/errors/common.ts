@@ -22,11 +22,10 @@ export const CommonErrorCode = {
   REQUIRED: "REQUIRED",
 } as const;
 
-export type CommonErrorCode =
-  (typeof CommonErrorCode)[keyof typeof CommonErrorCode];
+export type CommonErrorCode = (typeof CommonErrorCode)[keyof typeof CommonErrorCode];
 
 export interface CommonError<ErrorCode> {
-  code: ErrorCode | CommonErrorCode;
+  code?: ErrorCode | CommonErrorCode;
   field: string | null;
   message?: string | null;
 }

@@ -229,3 +229,46 @@ export const voucherDetailsFragment = gql`
     }
   }
 `;
+
+export const promotionRuleDetailsFragment = gql`
+  fragment PromotionRuleDetails on PromotionRule {
+    id
+    name
+    description
+    channels {
+      ...ChannelDetails
+    }
+    giftIds
+    rewardType
+    rewardValueType
+    rewardValue
+    cataloguePredicate
+    orderPredicate
+  }
+`;
+
+export const promotionDetailsFragments = gql`
+  fragment PromotionDetails on Promotion {
+    id
+    name
+    type
+    description
+    startDate
+    endDate
+    type
+    rules {
+      ...PromotionRuleDetails
+    }
+  }
+`;
+
+export const promotionFragment = gql`
+  fragment Promotion on Promotion {
+    ...Metadata
+    id
+    name
+    startDate
+    endDate
+    type
+  }
+`;

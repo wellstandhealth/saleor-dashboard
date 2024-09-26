@@ -1,19 +1,21 @@
+import { ConditionalDiscountFilterProvider } from "@dashboard/components/ConditionalFilter";
+import { Route } from "@dashboard/components/Router";
+import { useFlag } from "@dashboard/featureFlags";
 import { sectionNames } from "@dashboard/intl";
 import { asSortParams } from "@dashboard/utils/sort";
 import { parse as parseQs } from "qs";
 import React from "react";
 import { useIntl } from "react-intl";
-import { Route, RouteComponentProps, Switch } from "react-router-dom";
+import { RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
+import { DiscountListUrlQueryParams, DiscountListUrlSortField } from "./discountsUrls";
 import {
   saleAddPath,
-  SaleCreateUrlQueryParams,
   saleListPath,
   SaleListUrlQueryParams,
   SaleListUrlSortField,
   salePath,
-  SaleUrlQueryParams,
   voucherAddPath,
   VoucherCreateUrlQueryParams,
   voucherListPath,
@@ -22,6 +24,9 @@ import {
   voucherPath,
   VoucherUrlQueryParams,
 } from "./urls";
+import { DiscountCreate } from "./views/DiscountCreate";
+import { DiscountDetails } from "./views/DiscountDetails";
+import { DiscountList } from "./views/DiscountList";
 import SaleCreateViewComponent from "./views/SaleCreate/SaleCreate";
 import SaleDetailsViewComponent from "./views/SaleDetails";
 import SaleListViewComponent from "./views/SaleList";
@@ -32,31 +37,42 @@ import VoucherListViewComponent from "./views/VoucherList";
 const SaleListView: React.FC<RouteComponentProps<{}>> = ({ location }) => {
   const qs = parseQs(location.search.substr(1)) as any;
   const params: SaleListUrlQueryParams = asSortParams(qs, SaleListUrlSortField);
+  const { enabled } = useFlag("discounts_rules");
+
+  if (enabled) {
+    const params: DiscountListUrlQueryParams = asSortParams(qs, DiscountListUrlSortField);
+
+    return (
+      <ConditionalDiscountFilterProvider locationSearch={location.search}>
+        <DiscountList params={params} />
+      </ConditionalDiscountFilterProvider>
+    );
+  }
+
   return <SaleListViewComponent params={params} />;
 };
-
-const SaleDetailsView: React.FC<RouteComponentProps<{ id: string }>> = ({
-  match,
-  location,
-}) => {
+const SaleDetailsView: React.FC<RouteComponentProps<{ id: string }>> = ({ match, location }) => {
   const qs = parseQs(location.search.substr(1));
-  const params: SaleUrlQueryParams = qs;
+  const params = qs;
+  const { enabled } = useFlag("discounts_rules");
 
-  return (
-    <SaleDetailsViewComponent
-      id={decodeURIComponent(match.params.id)}
-      params={params}
-    />
-  );
+  if (enabled) {
+    return <DiscountDetails id={decodeURIComponent(match.params.id)} params={params} />;
+  }
+
+  return <SaleDetailsViewComponent id={decodeURIComponent(match.params.id)} params={params} />;
 };
-
 const SaleCreateView: React.FC<RouteComponentProps> = ({ location }) => {
   const qs = parseQs(location.search.substr(1));
-  const params: SaleCreateUrlQueryParams = qs;
+  const params = qs;
+  const { enabled } = useFlag("discounts_rules");
+
+  if (enabled) {
+    return <DiscountCreate />;
+  }
 
   return <SaleCreateViewComponent params={params} />;
 };
-
 const VoucherListView: React.FC<RouteComponentProps<{}>> = ({ location }) => {
   const qs = parseQs(location.search.substr(1)) as any;
   const params: VoucherListUrlQueryParams = asSortParams(
@@ -64,24 +80,15 @@ const VoucherListView: React.FC<RouteComponentProps<{}>> = ({ location }) => {
     VoucherListUrlSortField,
     VoucherListUrlSortField.code,
   );
+
   return <VoucherListViewComponent params={params} />;
 };
-
-const VoucherDetailsView: React.FC<RouteComponentProps<{ id: string }>> = ({
-  match,
-  location,
-}) => {
+const VoucherDetailsView: React.FC<RouteComponentProps<{ id: string }>> = ({ match, location }) => {
   const qs = parseQs(location.search.substr(1));
   const params: VoucherUrlQueryParams = qs;
 
-  return (
-    <VoucherDetailsViewComponent
-      id={decodeURIComponent(match.params.id)}
-      params={params}
-    />
-  );
+  return <VoucherDetailsViewComponent id={decodeURIComponent(match.params.id)} params={params} />;
 };
-
 const VoucherCreateView: React.FC<RouteComponentProps> = ({ location }) => {
   const qs = parseQs(location.search.substr(1));
   const params: VoucherCreateUrlQueryParams = qs;

@@ -1,13 +1,12 @@
 import CardTitle from "@dashboard/components/CardTitle";
 import ListItemLink from "@dashboard/components/ListItemLink";
-import Skeleton from "@dashboard/components/Skeleton";
 import { TaxClassFragment } from "@dashboard/graphql";
 import { taxesMessages } from "@dashboard/taxes/messages";
 import { taxClassesListUrl } from "@dashboard/taxes/urls";
 import { isLastElement } from "@dashboard/taxes/utils/utils";
 import { Card, CardContent, Divider } from "@material-ui/core";
 import { List, ListHeader, ListItem, ListItemCell } from "@saleor/macaw-ui";
-import { Button, TrashBinIcon } from "@saleor/macaw-ui-next";
+import { Button, Skeleton, TrashBinIcon } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -29,7 +28,6 @@ export const TaxClassesMenu: React.FC<TaxClassesMenuProps> = ({
 }) => {
   const classes = useStyles();
   const intl = useIntl();
-
   const isCreatingNew = selectedTaxClassId === "new";
 
   return (
@@ -41,6 +39,7 @@ export const TaxClassesMenu: React.FC<TaxClassesMenuProps> = ({
             variant="secondary"
             onClick={onCreateNew}
             disabled={isCreatingNew}
+            data-test-id="create-class-button"
           >
             <FormattedMessage {...taxesMessages.addTaxClassLabel} />
           </Button>
@@ -61,6 +60,7 @@ export const TaxClassesMenu: React.FC<TaxClassesMenuProps> = ({
             {taxClasses?.map((taxClass, taxClassId) => (
               <React.Fragment key={taxClass.id}>
                 <ListItemLink
+                  data-test-id="class-list-rows"
                   className={clsx(classes.clickable, classes.tableRow, {
                     [classes.selected]: taxClass.id === selectedTaxClassId,
                   })}
@@ -71,6 +71,7 @@ export const TaxClassesMenu: React.FC<TaxClassesMenuProps> = ({
                       {taxClass.name}
                       {taxClass.id !== "new" && (
                         <Button
+                          data-test-id="class-delete-button"
                           icon={<TrashBinIcon />}
                           variant="tertiary"
                           onClick={event => {

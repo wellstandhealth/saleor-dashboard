@@ -1,12 +1,11 @@
-// @ts-strict-ignore
-import {
-  ChannelUsabilityDataQuery,
-  OrderDetailsFragment,
-} from "@dashboard/graphql";
+import { ChannelUsabilityDataQuery, OrderDetailsFragment } from "@dashboard/graphql";
+import { shippingZonesListPath } from "@dashboard/shipping/urls";
 import { Alert, AlertProps } from "@saleor/macaw-ui";
+import { sprinkles } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
 import React from "react";
-import { MessageDescriptor, useIntl } from "react-intl";
+import { FormattedMessage, MessageDescriptor, useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 
 import OrderAlerts from "../OrderAlerts";
 import { alertMessages } from "./messages";
@@ -18,9 +17,8 @@ const getAlerts = (
 ) => {
   const canDetermineShippingMethods =
     order?.shippingAddress?.country.code && !!order?.lines?.length;
-
   const isChannelInactive = order && !order.channel.isActive;
-  const noProductsInChannel = channelUsabilityData?.products.totalCount === 0;
+  const noProductsInChannel = channelUsabilityData?.products?.totalCount === 0;
   const noShippingMethodsInChannel =
     canDetermineShippingMethods && order?.shippingMethods.length === 0;
 
@@ -29,9 +27,11 @@ const getAlerts = (
   if (isChannelInactive) {
     alerts = [...alerts, alertMessages.inactiveChannel];
   }
+
   if (noProductsInChannel) {
     alerts = [...alerts, alertMessages.noProductsInChannel];
   }
+
   if (noShippingMethodsInChannel) {
     alerts = [...alerts, alertMessages.noShippingMethodsInChannel];
   }
@@ -48,7 +48,6 @@ const OrderDraftAlert: React.FC<OrderDraftAlertProps> = props => {
   const { order, channelUsabilityData, ...alertProps } = props;
   const classes = useAlertStyles();
   const intl = useIntl();
-
   const alerts = getAlerts(order, channelUsabilityData);
 
   if (!alerts.length) {
@@ -65,6 +64,25 @@ const OrderDraftAlert: React.FC<OrderDraftAlertProps> = props => {
       <OrderAlerts
         alerts={alerts}
         alertsHeader={intl.formatMessage(alertMessages.manyAlerts)}
+        values={{
+          country: order?.shippingAddress?.country.country,
+          configLink: (
+            <Link
+              to={shippingZonesListPath}
+              target="_blank"
+              className={sprinkles({
+                textDecoration: "underline",
+                color: "accent1",
+              })}
+            >
+              <FormattedMessage
+                defaultMessage="shipping zones configuration"
+                id="T3cLGs"
+                description="alert link message"
+              />
+            </Link>
+          ),
+        }}
       />
     </Alert>
   );

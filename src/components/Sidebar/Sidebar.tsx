@@ -5,10 +5,7 @@ import { SidebarContent } from "./Content";
 
 export const Sidebar = () => (
   <>
-    <Box
-      display={{ mobile: "none", tablet: "none", desktop: "block" }}
-      height="100%"
-    >
+    <Box display={{ mobile: "none", tablet: "none", desktop: "block" }} height="100%">
       <SidebarContent />
     </Box>
     <Box display={{ mobile: "block", tablet: "block", desktop: "none" }}>
@@ -17,7 +14,7 @@ export const Sidebar = () => (
           <Box
             as="button"
             borderWidth={0}
-            backgroundColor="interactiveNeutralHighlightDefault"
+            backgroundColor="default1"
             cursor="pointer"
             data-test-id="sidebar-drawer-open"
           >
@@ -25,7 +22,7 @@ export const Sidebar = () => (
           </Box>
         </Drawer.Trigger>
         <Drawer.Content
-          backgroundColor="subdued"
+          backgroundColor="default2"
           data-test-id="sidebar-drawer-content"
           paddingTop={0}
         >

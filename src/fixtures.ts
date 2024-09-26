@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import {
   AllocationStrategyEnum,
   ChannelFragment,
@@ -23,6 +22,7 @@ const pageInfo = {
   hasNextPage: true,
   hasPreviousPage: false,
 };
+
 export const pageListProps = {
   default: {
     disabled: false,
@@ -448,7 +448,7 @@ export const permissions: ShopInfoQuery["shop"]["permissions"] = [
     name: "Manage webhooks.",
   },
 ].map(perm => ({
-  __typename: "Permission" as "Permission",
+  __typename: "Permission" as const,
   ...perm,
 }));
 
@@ -457,7 +457,9 @@ export const date = {
   to: "2019-12-38",
 };
 
-export const adminUserPermissions: UserDetailsQuery["me"]["userPermissions"] = [
+export const adminUserPermissions: NonNullable<
+  NonNullable<UserDetailsQuery["me"]>["userPermissions"]
+> = [
   {
     __typename: "UserPermission",
     code: PermissionEnum.MANAGE_CHECKOUTS,
@@ -556,12 +558,12 @@ export const adminUserPermissions: UserDetailsQuery["me"]["userPermissions"] = [
 ];
 
 export const address = {
-  __typename: "Address" as "Address",
+  __typename: "Address" as const,
   city: "Port Danielshire",
   cityArea: "",
   companyName: "",
   country: {
-    __typename: "CountryDisplay" as "CountryDisplay",
+    __typename: "CountryDisplay" as const,
     code: "UA",
     country: "United Arab Emirates",
   },

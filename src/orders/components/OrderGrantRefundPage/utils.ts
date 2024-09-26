@@ -1,6 +1,7 @@
 import {
   OrderDetailsGrantedRefundFragment,
   OrderDetailsGrantRefundFragment,
+  OrderGrantedRefundFragment,
   OrderGrantRefundCreateLineInput,
 } from "@dashboard/graphql";
 import currency from "currency.js";
@@ -14,9 +15,9 @@ export const calculateTotalPrice = (
 ): number => {
   const shippingCost = order?.shippingPrice?.gross?.amount ?? 0;
   const lines = Array.from(state.lines.values());
-
   const linesValue = lines.reduce((total, line) => {
     const price = currency(line.unitPrice).multiply(line.selectedQuantity);
+
     return total.add(price.value);
   }, currency(0));
 
@@ -35,8 +36,8 @@ export const getFulfilmentSubtitle = (
 export const prepareLineData = (lines: Map<string, ReducerOrderLine>): Line[] =>
   Array.from(lines.entries())
     .filter(([_, line]) => line.isDirty)
-    .map(([id, line]) => ({
-      id,
+    .map(([, line]) => ({
+      id: line.orderLineId,
       quantity: line.selectedQuantity,
     }));
 
@@ -94,18 +95,18 @@ export const getGrantedRefundData = (
 
 export const calculateCanRefundShipping = (
   editedGrantedRefund?: OrderGrantRefundData,
-  grantedRefunds?: OrderDetailsGrantedRefundFragment[],
+  grantedRefunds?: Array<Pick<OrderGrantedRefundFragment, "id" | "shippingCostsIncluded">>,
 ) => {
   if (editedGrantedRefund) {
     if (editedGrantedRefund.grantRefundForShipping) {
       return true;
     }
+
     return !grantedRefunds?.some(
-      refund =>
-        refund.shippingCostsIncluded &&
-        refund.id !== editedGrantedRefund.grantRefundId,
+      refund => refund.shippingCostsIncluded && refund.id !== editedGrantedRefund.grantRefundId,
     );
   }
+
   return !grantedRefunds?.some(refund => refund.shippingCostsIncluded);
 };
 

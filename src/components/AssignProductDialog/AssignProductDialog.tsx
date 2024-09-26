@@ -1,27 +1,16 @@
 // @ts-strict-ignore
-import {
-  ConfirmButton,
-  ConfirmButtonTransitionState,
-} from "@dashboard/components/ConfirmButton";
+import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { DashboardModal } from "@dashboard/components/Modal";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
 import TableCellAvatar from "@dashboard/components/TableCellAvatar";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { SearchProductsQuery } from "@dashboard/graphql";
 import useModalDialogOpen from "@dashboard/hooks/useModalDialogOpen";
 import useSearchQuery from "@dashboard/hooks/useSearchQuery";
 import { maybe } from "@dashboard/misc";
 import useScrollableDialogStyle from "@dashboard/styles/useScrollableDialogStyle";
-import { DialogProps, FetchMoreProps, RelayToFlat } from "@dashboard/types";
-import {
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TableBody,
-  TableCell,
-  TextField,
-} from "@material-ui/core";
+import { DialogProps, FetchMoreProps } from "@dashboard/types";
+import { CircularProgress, TableBody, TableCell, TextField } from "@material-ui/core";
+import { Box, Text } from "@saleor/macaw-ui-next";
 import React, { useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -31,15 +20,19 @@ import BackButton from "../BackButton";
 import Checkbox from "../Checkbox";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
+import { Products, SelectedChannel } from "./types";
+import { isProductAvailableInVoucherChannels } from "./utils";
 
 export interface AssignProductDialogFormData {
-  products: RelayToFlat<SearchProductsQuery["search"]>;
+  products: Products;
   query: string;
 }
 
 export interface AssignProductDialogProps extends FetchMoreProps, DialogProps {
   confirmButtonState: ConfirmButtonTransitionState;
-  products: RelayToFlat<SearchProductsQuery["search"]>;
+  products: Products;
+  selectedChannels?: SelectedChannel[];
+  productUnavailableText?: string;
   selectedIds?: Record<string, boolean>;
   loading: boolean;
   onFetch: (value: string) => void;
@@ -47,10 +40,11 @@ export interface AssignProductDialogProps extends FetchMoreProps, DialogProps {
 }
 
 const scrollableTargetId = "assignProductScrollableDialog";
-
 const AssignProductDialog: React.FC<AssignProductDialogProps> = props => {
   const {
     confirmButtonState,
+    selectedChannels,
+    productUnavailableText,
     hasMore,
     open,
     loading,
@@ -72,7 +66,6 @@ const AssignProductDialog: React.FC<AssignProductDialogProps> = props => {
       setProductsDict(prev => {
         const prevIds = Object.keys(prev);
         const newIds = Object.keys(selectedIds);
-
         const preSelected = newIds
           .filter(n => !prevIds.includes(n))
           .reduce((p, c) => ({ ...p, [c]: true }), {});
@@ -81,7 +74,6 @@ const AssignProductDialog: React.FC<AssignProductDialogProps> = props => {
       });
     }
   }, [selectedIds]);
-
   useModalDialogOpen(open, {
     onOpen: () => {
       queryReset();
@@ -101,31 +93,24 @@ const AssignProductDialog: React.FC<AssignProductDialogProps> = props => {
       })),
     );
   };
-
   const handleChange = productId => {
     setProductsDict(prev => ({
       ...prev,
       [productId]: !prev[productId] ?? true,
     }));
   };
-
   const handleClose = () => {
     queryReset();
     onClose();
   };
 
   return (
-    <Dialog
-      onClose={handleClose}
-      open={open}
-      classes={{ paper: scrollableDialogClasses.dialog }}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle disableTypography>
-        <FormattedMessage {...messages.assignVariantDialogHeader} />
-      </DialogTitle>
-      <DialogContent>
+    <DashboardModal onChange={handleClose} open={open}>
+      <DashboardModal.Content size="sm" __gridTemplateRows="auto auto 1fr auto">
+        <DashboardModal.Title>
+          <FormattedMessage {...messages.assignVariantDialogHeader} />
+        </DashboardModal.Title>
+
         <TextField
           name="query"
           value={query}
@@ -138,70 +123,77 @@ const AssignProductDialog: React.FC<AssignProductDialogProps> = props => {
             endAdornment: loading && <CircularProgress size={16} />,
           }}
         />
-      </DialogContent>
-      <DialogContent
-        className={scrollableDialogClasses.scrollArea}
-        id={scrollableTargetId}
-      >
-        <InfiniteScroll
-          dataLength={products?.length ?? 0}
-          next={onFetchMore}
-          hasMore={hasMore}
-          scrollThreshold="100px"
-          loader={
-            <div className={scrollableDialogClasses.loadMoreLoaderContainer}>
-              <CircularProgress size={16} />
-            </div>
-          }
-          scrollableTarget={scrollableTargetId}
-        >
-          <ResponsiveTable key="table">
-            <TableBody>
-              {products &&
-                products.map(product => {
-                  const isSelected = productsDict[product.id] || false;
 
-                  return (
-                    <TableRowLink
-                      key={product.id}
-                      data-test-id="assign-product-table-row"
-                    >
-                      <TableCellAvatar
-                        className={classes.avatar}
-                        thumbnail={maybe(() => product.thumbnail.url)}
-                      />
-                      <TableCell className={classes.colName}>
-                        {product.name}
-                      </TableCell>
-                      <TableCell
-                        padding="checkbox"
-                        className={classes.checkboxCell}
-                      >
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => handleChange(product.id)}
+        <Box className={scrollableDialogClasses.scrollArea} id={scrollableTargetId}>
+          <InfiniteScroll
+            dataLength={products?.length ?? 0}
+            next={onFetchMore}
+            hasMore={hasMore}
+            scrollThreshold="100px"
+            loader={
+              <div className={scrollableDialogClasses.loadMoreLoaderContainer}>
+                <CircularProgress size={16} />
+              </div>
+            }
+            scrollableTarget={scrollableTargetId}
+          >
+            <ResponsiveTable key="table">
+              <TableBody>
+                {products &&
+                  products.map(product => {
+                    const isSelected = productsDict[product.id] || false;
+                    const isProductAvailable = isProductAvailableInVoucherChannels(
+                      product.channelListings,
+                      selectedChannels,
+                    );
+
+                    return (
+                      <TableRowLink key={product.id} data-test-id="assign-product-table-row">
+                        <TableCell padding="checkbox" className={classes.checkboxCell}>
+                          <Checkbox
+                            checked={isSelected}
+                            disabled={!isProductAvailable}
+                            onChange={() => handleChange(product.id)}
+                          />
+                        </TableCell>
+                        <TableCellAvatar
+                          className={classes.avatar}
+                          thumbnail={maybe(() => product.thumbnail.url)}
+                          style={{
+                            opacity: !isProductAvailable ? 0.5 : 1,
+                          }}
                         />
-                      </TableCell>
-                    </TableRowLink>
-                  );
-                })}
-            </TableBody>
-          </ResponsiveTable>
-        </InfiniteScroll>
-      </DialogContent>
-      <DialogActions>
-        <BackButton onClick={onClose} />
-        <ConfirmButton
-          data-test-id="submit"
-          transitionState={confirmButtonState}
-          type="submit"
-          onClick={handleSubmit}
-        >
-          <FormattedMessage {...messages.assignProductDialogButton} />
-        </ConfirmButton>
-      </DialogActions>
-    </Dialog>
+                        <TableCell className={classes.colName}>
+                          {product.name}
+                          {!isProductAvailable && productUnavailableText && (
+                            <Text display="block" size={1} color="default2">
+                              {productUnavailableText}
+                            </Text>
+                          )}
+                        </TableCell>
+                      </TableRowLink>
+                    );
+                  })}
+              </TableBody>
+            </ResponsiveTable>
+          </InfiniteScroll>
+        </Box>
+
+        <DashboardModal.Actions>
+          <BackButton onClick={onClose} />
+          <ConfirmButton
+            data-test-id="submit"
+            transitionState={confirmButtonState}
+            type="submit"
+            onClick={handleSubmit}
+          >
+            <FormattedMessage {...messages.assignProductDialogButton} />
+          </ConfirmButton>
+        </DashboardModal.Actions>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
+
 AssignProductDialog.displayName = "AssignProductDialog";
 export default AssignProductDialog;

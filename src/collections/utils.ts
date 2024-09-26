@@ -1,9 +1,5 @@
-// @ts-strict-ignore
 import { ChannelCollectionData } from "@dashboard/channels/utils";
-import {
-  CollectionDetailsQuery,
-  SearchProductsQuery,
-} from "@dashboard/graphql";
+import { CollectionDetailsQuery, SearchProductsQuery } from "@dashboard/graphql";
 
 export const createChannelsChangeHandler =
   (
@@ -12,11 +8,8 @@ export const createChannelsChangeHandler =
     triggerChange: () => void,
   ) =>
   (id: string, data: Omit<ChannelCollectionData, "name" | "id">) => {
-    const channelIndex = channelListings.findIndex(
-      channel => channel.id === id,
-    );
+    const channelIndex = channelListings.findIndex(channel => channel.id === id);
     const channel = channelListings[channelIndex];
-
     const updatedChannels = [
       ...channelListings.slice(0, channelIndex),
       {
@@ -25,6 +18,7 @@ export const createChannelsChangeHandler =
       },
       ...channelListings.slice(channelIndex + 1),
     ];
+
     updateChannels(updatedChannels);
     triggerChange();
   };
@@ -38,7 +32,7 @@ export const getAssignedProductIdsToCollection = (
   }
 
   return queryData.edges
-    .filter(e => e.node.collections.some(s => collection.id === s.id))
+    .filter(e => e.node?.collections?.some(s => collection.id === s.id))
     .map(e => ({ [e.node.id]: true }))
     .reduce((p, c) => ({ ...p, ...c }), {});
 };

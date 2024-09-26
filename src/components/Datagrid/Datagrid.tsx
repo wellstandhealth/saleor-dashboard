@@ -1,8 +1,8 @@
 import "@glideapps/glide-data-grid/dist/index.css";
 
-import { getAppMountUri } from "@dashboard/config";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { usePreventHistoryBack } from "@dashboard/hooks/usePreventHistoryBack";
+import { getCellAction } from "@dashboard/products/components/ProductListDatagrid/datagrid";
 import DataEditor, {
   CellClickedEventArgs,
   DataEditorProps,
@@ -10,14 +10,13 @@ import DataEditor, {
   EditableGridCell,
   GridCell,
   GridColumn,
-  GridMouseEventArgs,
   GridSelection,
   HeaderClickedEventArgs,
   Item,
   Theme,
 } from "@glideapps/glide-data-grid";
 import { GetRowThemeCallback } from "@glideapps/glide-data-grid/dist/ts/data-grid/data-grid-render";
-import { Card, CardContent, CircularProgress } from "@material-ui/core";
+import { CircularProgress } from "@material-ui/core";
 import { Box, Text, useTheme } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
 import range from "lodash/range";
@@ -31,28 +30,22 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { FormattedMessage } from "react-intl";
 
+import { DashboardCard } from "../Card";
 import { CardMenuItem } from "../CardMenu";
 import { FullScreenContainer } from "./components/FullScreenContainer";
-import { Header } from "./components/Header";
 import { RowActions } from "./components/RowActions";
 import { TooltipContainer } from "./components/TooltipContainer";
 import { useCustomCellRenderers } from "./customCells/useCustomCellRenderers";
 import { headerIcons } from "./headerIcons";
-import useDatagridChange, {
-  DatagridChange,
-  OnDatagridChange,
-} from "./hooks/useDatagridChange";
+import useDatagridChange, { DatagridChange, OnDatagridChange } from "./hooks/useDatagridChange";
 import { useFullScreenMode } from "./hooks/useFullScreenMode";
 import { usePortalClasses } from "./hooks/usePortalClasses";
+import { useRowAnchor } from "./hooks/useRowAnchor";
+import { useRowHover } from "./hooks/useRowHover";
 import { useScrollRight } from "./hooks/useScrollRight";
 import { useTooltipContainer } from "./hooks/useTooltipContainer";
-import useStyles, {
-  cellHeight,
-  useDatagridTheme,
-  useFullScreenStyles,
-} from "./styles";
+import useStyles, { cellHeight, useDatagridTheme, useFullScreenStyles } from "./styles";
 import { AvailableColumn } from "./types";
 import { preventRowClickOnSelectionCheckbox } from "./utils";
 
@@ -67,9 +60,15 @@ export interface MenuItemsActions {
   removeRows: (indexes: number[]) => void;
 }
 
+export interface DatagridRenderHeaderProps {
+  isFullscreenOpen: boolean;
+  toggleFullscreen: () => void;
+  addRowOnDatagrid: () => void;
+  isAnimationOpenFinished: boolean;
+}
+
 export interface DatagridProps {
   fillHandle?: boolean;
-  addButtonLabel?: string;
   availableColumns: readonly AvailableColumn[];
   emptyText: string;
   getCellError: (item: Item, opts: GetCellContentOpts) => boolean;
@@ -77,13 +76,8 @@ export interface DatagridProps {
   getColumnTooltipContent?: (colIndex: number) => string;
   menuItems: (index: number) => CardMenuItem[];
   rows: number;
-  title?: string;
-  fullScreenTitle?: string;
   loading?: boolean;
-  selectionActions: (
-    selection: number[],
-    actions: MenuItemsActions,
-  ) => ReactNode;
+  selectionActions: (selection: number[], actions: MenuItemsActions) => ReactNode;
   onChange?: OnDatagridChange;
   onHeaderClicked?: (colIndex: number, event: HeaderClickedEventArgs) => void;
   renderColumnPicker?: () => ReactElement;
@@ -103,10 +97,10 @@ export interface DatagridProps {
   actionButtonPosition?: "left" | "right";
   recentlyAddedColumn?: string | null; // Enables scroll to recently added column
   onClearRecentlyAddedColumn?: () => void;
+  renderHeader?: (props: DatagridRenderHeaderProps) => ReactNode;
 }
 
 export const Datagrid: React.FC<DatagridProps> = ({
-  addButtonLabel,
   availableColumns,
   emptyText,
   getCellContent,
@@ -114,8 +108,6 @@ export const Datagrid: React.FC<DatagridProps> = ({
   menuItems,
   rows,
   selectionActions,
-  title,
-  fullScreenTitle,
   onHeaderClicked,
   onChange,
   renderColumnPicker,
@@ -137,27 +129,32 @@ export const Datagrid: React.FC<DatagridProps> = ({
   recentlyAddedColumn,
   onClearRecentlyAddedColumn,
   rowHeight = cellHeight,
+  renderHeader,
   ...datagridProps
 }): ReactElement => {
   const classes = useStyles({ actionButtonPosition });
-  const { themeValues } = useTheme();
+  const { themeValues, theme } = useTheme();
   const datagridTheme = useDatagridTheme(readonly, readonly);
   const editor = useRef<DataEditorRef | null>(null);
   const customRenderers = useCustomCellRenderers();
-
-  const hackARef = useRef<HTMLAnchorElement | null>(null);
   const navigate = useNavigator();
-
   const { scrolledToRight, scroller } = useScrollRight();
-
   const fullScreenClasses = useFullScreenStyles(classes);
   const { isOpen, isAnimationOpenFinished, toggle } = useFullScreenMode();
-
   const { clearTooltip, tooltip, setTooltip } = useTooltipContainer();
-
   const [selection, setSelection] = useState<GridSelection>();
-  const [hoverRow, setHoverRow] = useState<number | undefined>(undefined);
   const [areCellsDirty, setCellsDirty] = useState(true);
+
+  const { rowAnchorRef, setRowAnchorRef, setAnchorPosition } = useRowAnchor({
+    getRowAnchorUrl: rowAnchor,
+    rowMarkers,
+    availableColumns,
+  });
+
+  const { handleRowHover, hoverRow } = useRowHover({
+    hasRowHover,
+    onRowHover: setAnchorPosition,
+  });
 
   // Allow to listen to which row is selected and notfiy parent component
   useEffect(() => {
@@ -168,18 +165,16 @@ export const Datagrid: React.FC<DatagridProps> = ({
       });
     }
   }, [onRowSelectionChange, selection]);
-
   useEffect(() => {
     if (recentlyAddedColumn && editor.current) {
-      const columnIndex = availableColumns.findIndex(
-        column => column.id === recentlyAddedColumn,
-      );
+      const columnIndex = availableColumns.findIndex(column => column.id === recentlyAddedColumn);
 
       if (columnIndex === -1) {
         return;
       }
 
       const datagridScroll = editor.current.scrollTo;
+
       datagridScroll(columnIndex, 0, "horizontal", 0, 0, { hAlign: "start" });
 
       // This is required to disable scroll whenever availableColumns
@@ -189,37 +184,20 @@ export const Datagrid: React.FC<DatagridProps> = ({
       }
     }
   }, [recentlyAddedColumn, availableColumns, editor]);
-
   usePortalClasses({ className: classes.portal });
   usePreventHistoryBack(scroller);
 
-  const {
-    added,
-    onCellEdited,
-    onRowsRemoved,
-    changes,
-    removed,
-    getChangeIndex,
-    onRowAdded,
-  } = useDatagridChange(
-    availableColumns,
-    rows,
-    onChange,
-    (areCellsDirty: boolean) => setCellsDirty(areCellsDirty),
-  );
-
+  const { added, onCellEdited, onRowsRemoved, changes, removed, getChangeIndex, onRowAdded } =
+    useDatagridChange(availableColumns, rows, onChange, (areCellsDirty: boolean) =>
+      setCellsDirty(areCellsDirty),
+    );
   const rowsTotal = rows - removed.length + added.length;
   const hasMenuItem = !!menuItems(0).length;
   const hasColumnGroups = availableColumns.some(col => col.group);
-  const headerTitle = isAnimationOpenFinished
-    ? fullScreenTitle ?? title
-    : title;
-
   const handleGetCellContent = useCallback(
     ([column, row]: Item): GridCell => {
       const item = [column, row] as const;
       const opts = { changes, added, removed, getChangeIndex };
-
       const columnId = availableColumns[column]?.id;
       const changed = !!changes.current[getChangeIndex(columnId, row)]?.data;
 
@@ -228,14 +206,16 @@ export const Datagrid: React.FC<DatagridProps> = ({
         ...(changed && areCellsDirty
           ? {
               themeOverride: {
-                bgCell: themeValues.colors.background.surfaceBrandSubdued,
+                bgCell:
+                  // Consider moving this to MacawUI if we need it in other places
+                  theme === "defaultLight" ? "hsla(215, 100%, 96%, 1)" : "hsla(215, 100%, 21%, 1)",
               },
             }
           : {}),
         ...(getCellError(item, opts)
           ? {
               themeOverride: {
-                bgCell: themeValues.colors.background.surfaceCriticalDepressed,
+                bgCell: themeValues.colors.background.critical1,
               },
             }
           : {}),
@@ -249,15 +229,15 @@ export const Datagrid: React.FC<DatagridProps> = ({
       availableColumns,
       getCellContent,
       areCellsDirty,
-      themeValues.colors.background.surfaceBrandSubdued,
-      themeValues.colors.background.surfaceCriticalDepressed,
+      themeValues.colors.background.accent1,
+      themeValues.colors.background.critical1,
       getCellError,
     ],
   );
-
   const handleOnCellEdited = useCallback(
     ([column, row]: Item, newValue: EditableGridCell): void => {
       onCellEdited([column, row], newValue);
+
       if (!editor.current) {
         return;
       }
@@ -271,40 +251,6 @@ export const Datagrid: React.FC<DatagridProps> = ({
     [onCellEdited, availableColumns],
   );
 
-  const handleRowHover = useCallback(
-    (args: GridMouseEventArgs) => {
-      if (hasRowHover) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_, row] = args.location;
-        setHoverRow(args.kind !== "cell" ? undefined : row);
-      }
-
-      // the code below is responsible for adding native <a> element when hovering over rows in the datagrid
-      // this makes it possible to open links in a new tab and copy them
-      if (args.kind !== "cell" || !hackARef.current || !rowAnchor) {
-        return;
-      }
-      const href = rowAnchor(args.location);
-
-      if (!href) {
-        return;
-      }
-
-      if (preventRowClickOnSelectionCheckbox(rowMarkers, args.location[0])) {
-        return;
-      }
-
-      hackARef.current.style.left = `${window.scrollX + args.bounds.x}px`;
-      hackARef.current.style.width = `${args.bounds.width}px`;
-      hackARef.current.style.top = `${window.scrollY + args.bounds.y}px`;
-      hackARef.current.style.height = `${args.bounds.height}px`;
-      hackARef.current.href =
-        getAppMountUri() + (href.startsWith("/") ? href.slice(1) : href);
-      hackARef.current.dataset.reactRouterPath = href;
-    },
-    [hasRowHover, rowAnchor, rowMarkers],
-  );
-
   const handleCellClick = useCallback(
     (item: Item, args: CellClickedEventArgs) => {
       if (preventRowClickOnSelectionCheckbox(rowMarkers, item[0])) {
@@ -315,25 +261,28 @@ export const Datagrid: React.FC<DatagridProps> = ({
         onRowClick(item);
       }
 
+      if (getCellAction(availableColumns, item[0])) {
+        return;
+      }
+
       handleRowHover(args);
 
-      if (hackARef.current) {
-        hackARef.current.click();
+      if (rowAnchorRef.current) {
+        rowAnchorRef.current.click();
       }
     },
-    [rowMarkers, onRowClick, handleRowHover],
+    [rowMarkers, onRowClick, handleRowHover, rowAnchorRef],
   );
-
   const handleGridSelectionChange = (gridSelection: GridSelection) => {
     // In readonly we not allow selecting cells, but we allow selcting column
     if (readonly && !gridSelection.current) {
       setSelection(gridSelection);
     }
+
     if (!readonly) {
       setSelection(gridSelection);
     }
   };
-
   const handleGetThemeOverride = useCallback<GetRowThemeCallback>(
     (row: number) => {
       if (row !== hoverRow) {
@@ -341,22 +290,21 @@ export const Datagrid: React.FC<DatagridProps> = ({
       }
 
       const overrideTheme: Partial<Theme> = {
-        bgCell:
-          themeValues.colors.background.interactiveNeutralSecondaryHovering,
-        bgCellMedium:
-          themeValues.colors.background.interactiveNeutralSecondaryHovering,
+        /*
+          Grid-specific colors. Transparency matters when we highlight entire row.
+        */
+        bgCell: theme === "defaultLight" ? "hsla(220, 18%, 97%, 1)" : "hsla(211, 32%, 19%, 1)",
+        bgCellMedium: themeValues.colors.background.default1Hovered,
       };
 
       if (readonly) {
-        overrideTheme.accentLight =
-          themeValues.colors.background.surfaceNeutralHighlight;
+        overrideTheme.accentLight = themeValues.colors.background.default1;
       }
 
       return overrideTheme;
     },
     [hoverRow, readonly, themeValues],
   );
-
   const handleHeaderClicked = useCallback(
     (colIndex: number, event: HeaderClickedEventArgs) => {
       if (getColumnTooltipContent) {
@@ -373,7 +321,6 @@ export const Datagrid: React.FC<DatagridProps> = ({
     },
     [getColumnTooltipContent, onHeaderClicked, setTooltip],
   );
-
   const handleRemoveRows = useCallback(
     (rows: number[]) => {
       if (selection?.rows) {
@@ -383,7 +330,6 @@ export const Datagrid: React.FC<DatagridProps> = ({
     },
     [selection, onRowsRemoved],
   );
-
   const handleColumnResize = useCallback(
     (column: GridColumn, newSize: number) => {
       if (tooltip) {
@@ -393,24 +339,25 @@ export const Datagrid: React.FC<DatagridProps> = ({
       if (!onColumnResize) {
         return;
       }
+
       onColumnResize(column, newSize);
     },
     [clearTooltip, onColumnResize, tooltip],
   );
-
   const handleColumnMoved = useCallback(
     (startIndex: number, endIndex: number) => {
       if (tooltip) {
         clearTooltip();
       }
+
       if (!onColumnMoved) {
         return;
       }
+
       onColumnMoved(startIndex, endIndex);
     },
     [clearTooltip, onColumnMoved, tooltip],
   );
-
   const selectionActionsComponent = useMemo(
     () =>
       selection?.rows && selection?.rows.length > 0
@@ -420,84 +367,66 @@ export const Datagrid: React.FC<DatagridProps> = ({
         : null,
     [selection, selectionActions, handleRemoveRows],
   );
-
   // Hide the link when scrolling over it so that the scroll/wheel events go through to the Datagrid
   // Show the link quickly after the last scroll/wheel event
   const hideLinkAndShowAfterDelay = useCallback(
     (() => {
       let timer: ReturnType<typeof setTimeout> | null = null;
+
       return () => {
         if (timer) {
           clearTimeout(timer);
         }
 
-        if (hackARef.current) {
-          hackARef.current.style.display = "none";
+        if (rowAnchorRef.current) {
+          rowAnchorRef.current.style.display = "none";
         }
+
         timer = setTimeout(() => {
-          if (hackARef.current) {
-            hackARef.current.style.display = "block";
+          if (rowAnchorRef.current) {
+            rowAnchorRef.current.style.display = "block";
           }
         }, 100);
       };
     })(),
-    [hackARef],
+    [rowAnchorRef],
   );
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" marginY={9}>
+      <Box data-test-id="loader" display="flex" justifyContent="center" marginY={9}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <FullScreenContainer
-      open={isOpen}
-      className={fullScreenClasses.fullScreenContainer}
-    >
-      <Card className={classes.root}>
-        {headerTitle && (
-          <Header title={headerTitle}>
-            <Header.ButtonFullScreen isOpen={isOpen} onToggle={toggle}>
-              {isOpen ? (
-                <FormattedMessage
-                  id="QjPJ78"
-                  defaultMessage="Close"
-                  description="close full-screen"
-                />
-              ) : (
-                <FormattedMessage
-                  id="483Xnh"
-                  defaultMessage="Open"
-                  description="open full-screen"
-                />
-              )}
-            </Header.ButtonFullScreen>
-            {addButtonLabel && (
-              <Header.ButtonAddRow onAddRow={onRowAdded}>
-                {addButtonLabel}
-              </Header.ButtonAddRow>
-            )}
-          </Header>
-        )}
-        <CardContent classes={{ root: classes.cardContentRoot }}>
+    <FullScreenContainer open={isOpen} className={fullScreenClasses.fullScreenContainer}>
+      <DashboardCard position="relative" __height={isOpen ? "100%" : "auto"} gap={0}>
+        {renderHeader?.({
+          toggleFullscreen: toggle,
+          addRowOnDatagrid: onRowAdded,
+          isFullscreenOpen: isOpen,
+          isAnimationOpenFinished,
+        })}
+        <DashboardCard.Content
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          paddingX={0}
+          data-test-id="list"
+        >
           {rowsTotal > 0 || showEmptyDatagrid ? (
             <>
-              {selection?.rows &&
-                selection?.rows.length > 0 &&
-                selectionActionsComponent && (
-                  <div className={classes.actionBtnBar}>
-                    {selectionActionsComponent}
-                  </div>
-                )}
+              {selection?.rows && selection?.rows.length > 0 && selectionActionsComponent && (
+                <div className={classes.actionBtnBar}>{selectionActionsComponent}</div>
+              )}
               <div className={classes.editorContainer}>
                 <Box
-                  backgroundColor="plain"
+                  backgroundColor="default1"
                   borderTopWidth={1}
                   borderTopStyle="solid"
-                  borderColor="neutralPlain"
+                  borderColor="default1"
                 />
                 <DataEditor
                   {...datagridProps}
@@ -542,8 +471,7 @@ export const Datagrid: React.FC<DatagridProps> = ({
                     >
                       <div
                         className={clsx(classes.rowActionBarShadow, {
-                          [classes.rowActionBarShadowActive]:
-                            !scrolledToRight && hasMenuItem,
+                          [classes.rowActionBarShadowActive]: !scrolledToRight && hasMenuItem,
                         })}
                       />
                       <div
@@ -555,14 +483,9 @@ export const Datagrid: React.FC<DatagridProps> = ({
                       </div>
                       {hasColumnGroups && (
                         <div
-                          className={clsx(
-                            classes.rowAction,
-                            classes.rowColumnGroup,
-                            {
-                              [classes.rowActionScrolledToRight]:
-                                scrolledToRight,
-                            },
-                          )}
+                          className={clsx(classes.rowAction, classes.rowColumnGroup, {
+                            [classes.rowActionScrolledToRight]: scrolledToRight,
+                          })}
                         />
                       )}
                       {hasMenuItem &&
@@ -580,18 +503,18 @@ export const Datagrid: React.FC<DatagridProps> = ({
                   rowMarkerWidth={48}
                 />
                 {/* FIXME: https://github.com/glideapps/glide-data-grid/issues/505 */}
-                {hasColumnGroups && (
-                  <div className={classes.columnGroupFixer} />
-                )}
+                {hasColumnGroups && <div className={classes.columnGroupFixer} />}
               </div>
             </>
           ) : (
             <Box padding={6} textAlign="center">
-              <Text size="small">{emptyText}</Text>
+              <Text data-test-id="empty-data-grid-text" size={3}>
+                {emptyText}
+              </Text>
             </Box>
           )}
-        </CardContent>
-      </Card>
+        </DashboardCard.Content>
+      </DashboardCard>
       <TooltipContainer
         clearTooltip={clearTooltip}
         bounds={tooltip?.bounds}
@@ -599,13 +522,14 @@ export const Datagrid: React.FC<DatagridProps> = ({
       />
       {rowAnchor && (
         <a
-          ref={hackARef}
+          ref={setRowAnchorRef}
           style={{ position: "absolute" }}
           tabIndex={-1}
           aria-hidden={true}
           onWheelCapture={hideLinkAndShowAfterDelay}
           onClick={e => {
             e.preventDefault();
+
             if (e.currentTarget.dataset.reactRouterPath) {
               navigate(e.currentTarget.dataset.reactRouterPath);
             }

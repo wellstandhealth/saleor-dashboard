@@ -1,9 +1,8 @@
 // @ts-strict-ignore
 import { Button } from "@dashboard/components/Button";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import Checkbox from "@dashboard/components/Checkbox";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
-import Skeleton from "@dashboard/components/Skeleton";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
 import TableCellAvatar from "@dashboard/components/TableCellAvatar";
 import TableHead from "@dashboard/components/TableHead";
@@ -11,27 +10,28 @@ import { TablePaginationWithContext } from "@dashboard/components/TablePaginatio
 import TableRowLink from "@dashboard/components/TableRowLink";
 import { SaleDetailsFragment } from "@dashboard/graphql";
 import { productVariantEditPath } from "@dashboard/products/urls";
-import { Card, TableBody, TableCell, TableFooter } from "@material-ui/core";
+import { getLoadableList, mapEdgesToItems } from "@dashboard/utils/maps";
+import { TableBody, TableCell, TableFooter } from "@material-ui/core";
 import { DeleteIcon, IconButton } from "@saleor/macaw-ui";
+import { Skeleton } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { maybe, renderCollection } from "../../../misc";
-import { ListActions, ListProps, RelayToFlat } from "../../../types";
+import { ListActions, ListProps } from "../../../types";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
 
 export interface SaleVariantsProps extends ListProps, ListActions {
-  variants: RelayToFlat<SaleDetailsFragment["variants"]> | null;
+  discount: SaleDetailsFragment;
   onVariantAssign: () => void;
   onVariantUnassign: (id: string) => void;
 }
 
 const numberOfColumns = 5;
-
 const DiscountVariants: React.FC<SaleVariantsProps> = props => {
   const {
-    variants,
+    discount,
     disabled,
     onVariantAssign,
     onVariantUnassign,
@@ -42,19 +42,22 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
     toolbar,
   } = props;
   const classes = useStyles(props);
-
   const intl = useIntl();
 
+  const variants = mapEdgesToItems(discount?.variants);
+
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage(messages.discountVariantsHeader)}
-        toolbar={
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage(messages.discountVariantsHeader)}
+        </DashboardCard.Title>
+        <DashboardCard.Toolbar>
           <Button onClick={onVariantAssign} data-test-id="assign-variant">
             <FormattedMessage {...messages.discountVariantsButton} />
           </Button>
-        }
-      />
+        </DashboardCard.Toolbar>
+      </DashboardCard.Header>
       <ResponsiveTable>
         <colgroup>
           <col />
@@ -73,20 +76,14 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
         >
           <TableCell className={classes.colProductName}>
             <span className={variants?.length > 0 && classes.colNameLabel}>
-              <FormattedMessage
-                {...messages.discountVariantsTableProductHeader}
-              />
+              <FormattedMessage {...messages.discountVariantsTableProductHeader} />
             </span>
           </TableCell>
           <TableCell className={classes.colVariantName}>
-            <FormattedMessage
-              {...messages.discountVariantsTableVariantHeader}
-            />
+            <FormattedMessage {...messages.discountVariantsTableVariantHeader} />
           </TableCell>
           <TableCell className={classes.colType}>
-            <FormattedMessage
-              {...messages.discountVariantsTableProductHeader}
-            />
+            <FormattedMessage {...messages.discountVariantsTableProductHeader} />
           </TableCell>
           <TableCell className={classes.colActions} />
         </TableHead>
@@ -97,7 +94,7 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
         </TableFooter>
         <TableBody>
           {renderCollection(
-            variants,
+            getLoadableList(discount?.variants),
             variant => {
               const isSelected = variant ? isChecked(variant.id) : false;
 
@@ -105,10 +102,7 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
                 <TableRowLink
                   hover={!!variant}
                   key={variant ? variant.id : "skeleton"}
-                  href={
-                    variant &&
-                    productVariantEditPath(variant.product.id, variant.id)
-                  }
+                  href={variant && productVariantEditPath(variant.product.id, variant.id)}
                   className={classes.tableRow}
                   selected={isSelected}
                 >
@@ -124,19 +118,13 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
                     className={classes.colProductName}
                     thumbnail={maybe(() => variant.product.thumbnail.url)}
                   >
-                    {maybe<React.ReactNode>(
-                      () => variant.product.name,
-                      <Skeleton />,
-                    )}
+                    {maybe<React.ReactNode>(() => variant.product.name, <Skeleton />)}
                   </TableCellAvatar>
                   <TableCell className={classes.colType}>
                     {maybe<React.ReactNode>(() => variant.name, <Skeleton />)}
                   </TableCell>
                   <TableCell className={classes.colType}>
-                    {maybe<React.ReactNode>(
-                      () => variant.product.productType.name,
-                      <Skeleton />,
-                    )}
+                    {maybe<React.ReactNode>(() => variant.product.productType.name, <Skeleton />)}
                   </TableCell>
                   <TableCell className={classes.colActions}>
                     <TableButtonWrapper>
@@ -165,8 +153,9 @@ const DiscountVariants: React.FC<SaleVariantsProps> = props => {
           )}
         </TableBody>
       </ResponsiveTable>
-    </Card>
+    </DashboardCard>
   );
 };
+
 DiscountVariants.displayName = "DiscountVariants";
 export default DiscountVariants;

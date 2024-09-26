@@ -14,6 +14,7 @@ import { orderUrl } from "@dashboard/orders/urls";
 import React from "react";
 import { useIntl } from "react-intl";
 
+import { squashLines } from "../OrderReturn/useRefundWithinReturn";
 import { updateGrantRefundMessages } from "./messages";
 
 interface OrderGrantRefundProps {
@@ -21,21 +22,16 @@ interface OrderGrantRefundProps {
   grantRefundId: string;
 }
 
-const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({
-  orderId,
-  grantRefundId,
-}) => {
+const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({ orderId, grantRefundId }) => {
   const intl = useIntl();
   const navigate = useNavigator();
   const notify = useNotifier();
-
   const { data, loading } = useOrderDetailsGrantRefundEditQuery({
     displayLoader: true,
     variables: {
       id: orderId,
     },
   });
-
   const [grantRefund, grantRefundOptions] = useOrderGrantRefundEditMutation({
     onCompleted: submitData => {
       if (submitData.orderGrantRefundUpdate.errors.length === 0) {
@@ -49,7 +45,6 @@ const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({
       }
     },
   });
-
   const handleSubmit = async ({
     amount,
     reason,
@@ -57,11 +52,7 @@ const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({
     grantRefundForShipping,
   }: OrderGrantRefundFormData) => {
     const grantedRefundLinesToDelete = lines
-      .map(line =>
-        grantedRefund.lines.find(
-          grandLine => grandLine.orderLine.id === line.id,
-        ),
-      )
+      .map(line => grantedRefund.lines.find(grandLine => grandLine.orderLine.id === line.id))
       .filter(Boolean)
       .map(line => line.id);
 
@@ -83,11 +74,13 @@ const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({
           amount,
           reason,
           grantRefundForShipping,
-          addLines: lines.map(line => ({
-            id: line.id,
-            quantity: line.quantity,
-            reason: line.reason ?? "",
-          })),
+          addLines: squashLines(
+            lines.map(line => ({
+              id: line.id,
+              quantity: line.quantity,
+              reason: line.reason ?? "",
+            })),
+          ),
           removeLines: [],
         },
       }),
@@ -116,9 +109,7 @@ const OrderEditGrantRefund: React.FC<OrderGrantRefundProps> = ({
 
   return (
     <>
-      <WindowTitle
-        title={intl.formatMessage(updateGrantRefundMessages.windowTitle)}
-      />
+      <WindowTitle title={intl.formatMessage(updateGrantRefundMessages.windowTitle)} />
       <OrderGrantRefundPage
         order={data.order}
         loading={false}

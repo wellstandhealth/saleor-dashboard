@@ -11,6 +11,12 @@ const removeTypename = ({ __typename, ...input }: GenericMetadataInput) => ({
 });
 
 export const areMetadataArraysEqual = (
-  before: GenericMetadataInput[],
-  after: MetadataInput[],
-) => isEqual(sortBy(before.map(removeTypename)), sortBy(after));
+  before?: GenericMetadataInput[],
+  after?: MetadataInput[],
+) => {
+  if (!before || !after) {
+    return false;
+  }
+
+  return isEqual(sortBy(before.map(removeTypename)), sortBy(after));
+};

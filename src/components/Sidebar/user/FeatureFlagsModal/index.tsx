@@ -13,12 +13,8 @@ interface FeatureFlagsModalProps {
   onChange: (open: boolean) => void;
 }
 
-export const FeatureFlagsModal = ({
-  open,
-  onChange,
-}: FeatureFlagsModalProps) => {
+export const FeatureFlagsModal = ({ open, onChange }: FeatureFlagsModalProps) => {
   const { selectedFlag, hasNoFlags, changeTab } = useFlagsState();
-
   const handleTabClick = (tabName: Name) => {
     changeTab(tabName);
   };
@@ -27,10 +23,10 @@ export const FeatureFlagsModal = ({
     <Modal open={open} onChange={onChange}>
       <Modal.Content>
         <Box
-          backgroundColor="surfaceNeutralPlain"
+          backgroundColor="default1"
           borderRadius={3}
           position="fixed"
-          boxShadow="modal"
+          boxShadow="defaultModal"
           overflow="hidden"
           __left="50%"
           __top="50%"
@@ -43,19 +39,12 @@ export const FeatureFlagsModal = ({
               <Button variant="tertiary" icon={<CloseIcon />} size="small" />
             </Modal.Close>
           </Header>
-          <Box
-            display="flex"
-            backgroundColor="surfaceNeutralPlain"
-            height="100%"
-          >
+          <Box display="flex" backgroundColor="default1" height="100%">
             {hasNoFlags ? (
               <NoFlags />
             ) : (
               <>
-                <FlagList
-                  selectedName={selectedFlag.name}
-                  onItemClick={handleTabClick}
-                />
+                <FlagList selectedName={selectedFlag.name} onItemClick={handleTabClick} />
                 <Content
                   flagName={selectedFlag.displayName}
                   flagSlug={selectedFlag.name as Name}

@@ -12,16 +12,13 @@ import { useIntl } from "react-intl";
 
 import OrderRefund from "../OrderRefund";
 import OrderRefundFulfilledProducts from "../OrderRefundFulfilledProducts";
-import OrderRefundAmount from "../OrderRefundReturnAmount";
+import OrderRefundUnfulfilledProducts from "../OrderRefundUnfulfilledProducts";
+import { PaymentSubmitCard } from "../OrderReturnPage/components/PaymentSubmitCard";
 import {
   getMiscellaneousAmountValues,
   getRefundProductsAmountValues,
-} from "../OrderRefundReturnAmount/utils";
-import OrderRefundUnfulfilledProducts from "../OrderRefundUnfulfilledProducts";
-import OrderRefundForm, {
-  OrderRefundSubmitData,
-  OrderRefundType,
-} from "./form";
+} from "../OrderReturnPage/components/PaymentSubmitCard/utils";
+import OrderRefundForm, { OrderRefundSubmitData, OrderRefundType } from "./form";
 
 export const refundFulfilledStatuses = [
   FulfillmentStatus.FULFILLED,
@@ -38,24 +35,11 @@ export interface OrderRefundPageProps {
 }
 
 const OrderRefundPage: React.FC<OrderRefundPageProps> = props => {
-  const {
-    order,
-    defaultType = OrderRefundType.PRODUCTS,
-    disabled,
-    errors = [],
-    onSubmit,
-  } = props;
-
+  const { order, defaultType = OrderRefundType.PRODUCTS, disabled, errors = [], onSubmit } = props;
   const intl = useIntl();
-
-  const unfulfilledLines = order?.lines.filter(
-    line => line.quantityToFulfill > 0,
-  );
-
+  const unfulfilledLines = order?.lines.filter(line => line.quantityToFulfill > 0);
   const fulfilledFulfillemnts =
-    order?.fulfillments.filter(({ status }) =>
-      refundFulfilledStatuses.includes(status),
-    ) || [];
+    order?.fulfillments.filter(({ status }) => refundFulfilledStatuses.includes(status)) || [];
 
   return (
     <OrderRefundForm
@@ -93,12 +77,8 @@ const OrderRefundPage: React.FC<OrderRefundPageProps> = props => {
                         unfulfilledLines={unfulfilledLines}
                         data={data}
                         disabled={disabled}
-                        onRefundedProductQuantityChange={
-                          handlers.changeRefundedProductQuantity
-                        }
-                        onSetMaximalQuantities={
-                          handlers.setMaximalRefundedProductQuantities
-                        }
+                        onRefundedProductQuantityChange={handlers.changeRefundedProductQuantity}
+                        onSetMaximalQuantities={handlers.setMaximalRefundedProductQuantities}
                       />
                     </>
                   )}
@@ -114,9 +94,7 @@ const OrderRefundPage: React.FC<OrderRefundPageProps> = props => {
                           handlers.changeRefundedFulfilledProductQuantity
                         }
                         onSetMaximalQuantities={() =>
-                          handlers.setMaximalRefundedFulfilledProductQuantities(
-                            fulfillment?.id,
-                          )
+                          handlers.setMaximalRefundedFulfilledProductQuantities(fulfillment?.id)
                         }
                       />
                     </React.Fragment>
@@ -125,7 +103,7 @@ const OrderRefundPage: React.FC<OrderRefundPageProps> = props => {
               )}
             </DetailPageLayout.Content>
             <DetailPageLayout.RightSidebar>
-              <OrderRefundAmount
+              <PaymentSubmitCard
                 amountData={
                   isProductRefund
                     ? getRefundProductsAmountValues(order, data)
@@ -145,5 +123,6 @@ const OrderRefundPage: React.FC<OrderRefundPageProps> = props => {
     </OrderRefundForm>
   );
 };
+
 OrderRefundPage.displayName = "OrderRefundPage";
 export default OrderRefundPage;

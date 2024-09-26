@@ -2,13 +2,7 @@
 import { StatusDot } from "@dashboard/components/StatusDot/StatusDot";
 import { ProductListQuery } from "@dashboard/graphql";
 import { RelayToFlat } from "@dashboard/types";
-import {
-  Box,
-  ProductsIcons,
-  sprinkles,
-  Text,
-  vars,
-} from "@saleor/macaw-ui-next";
+import { Box, ProductsIcons, sprinkles, Text, vars } from "@saleor/macaw-ui-next";
 import React from "react";
 
 import { getTileStatus } from "./utils";
@@ -24,10 +18,7 @@ const commonThumbnailProps = {
   aspectRatio: "1 / 1",
 } as const;
 
-export const ProductTile: React.FC<ProductTileProps> = ({
-  product,
-  onClick,
-}) => (
+export const ProductTile: React.FC<ProductTileProps> = ({ product, onClick }) => (
   <Box
     display="flex"
     flexDirection="column"
@@ -51,12 +42,12 @@ export const ProductTile: React.FC<ProductTileProps> = ({
         display="flex"
         alignItems="center"
         justifyContent="center"
-        backgroundColor="surfaceNeutralSubdued"
+        backgroundColor="default2"
       >
         <Box __width="40%" __height="40%">
           <ProductsIcons
             size="fill"
-            color="iconNeutralDisabled"
+            color="defaultDisabled"
             data-test-id={`placeholder-svg-${product.id}`}
           />
         </Box>
@@ -68,9 +59,8 @@ export const ProductTile: React.FC<ProductTileProps> = ({
       </Box>
       <Text
         ellipsis
-        color="textNeutralSubdued"
-        variant="caption"
-        size="small"
+        color="default2"
+        size={1}
         alignItems="center"
         className={sprinkles({ paddingY: 0.5 })}
       >
@@ -78,7 +68,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
       </Text>
     </Box>
     <Box display="flex" justifyContent="space-between" marginTop={0.5}>
-      <Text ellipsis color="textNeutralDefault" variant="bodyEmp" size="small">
+      <Text ellipsis color="default1" size={3} fontWeight="medium">
         {product.name}
       </Text>
     </Box>
@@ -92,7 +82,7 @@ export const ProductTile: React.FC<ProductTileProps> = ({
       __opacity={0.1}
       borderRadius={5}
       backgroundColor={{
-        hover: "highlightDim",
+        hover: "default1Hovered",
       }}
     ></Box>
   </Box>

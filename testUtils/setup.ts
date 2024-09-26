@@ -1,7 +1,7 @@
-// @ts-strict-ignore
 import "@testing-library/jest-dom";
-
 import { configure } from "@testing-library/react";
+
+jest.mock("@sentry/react");
 
 document.getElementById = () => document.createElement("div");
 
@@ -24,9 +24,10 @@ document.createRange = () => {
 window.__SALEOR_CONFIG__ = {
   API_URL: "http://localhost:8000/graphql/",
   APP_MOUNT_URI: "/",
-  APPS_MARKETPLACE_API_URI: "http://localhost:3000",
+  APPS_MARKETPLACE_API_URL: "http://localhost:3000",
   APPS_TUNNEL_URL_KEYWORDS: ".ngrok.io;.saleor.live",
   IS_CLOUD_INSTANCE: "true",
+  LOCALE_CODE: "EN",
 };
 
 process.env.TZ = "UTC";
@@ -40,7 +41,7 @@ configure({ testIdAttribute: "data-test-id" });
  */
 import { TextDecoder, TextEncoder } from "util";
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+global.TextDecoder = TextDecoder as typeof global.TextDecoder;
 
 global.CSS = {
   supports: () => false,

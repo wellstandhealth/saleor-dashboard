@@ -1,15 +1,12 @@
-// @ts-strict-ignore
-import { Button } from "@dashboard/components/Button";
 import Form from "@dashboard/components/Form";
 import FormSpacer from "@dashboard/components/FormSpacer";
+import { AccountErrorFragment } from "@dashboard/graphql";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import getAccountErrorMessage from "@dashboard/utils/errors/account";
-import { TextField, Typography } from "@material-ui/core";
-import { SetPasswordData } from "@saleor/sdk";
+import { TextField } from "@material-ui/core";
+import { Box, Button, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-
-import useStyles from "../styles";
 
 export interface NewPasswordPageFormData {
   password: string;
@@ -17,7 +14,7 @@ export interface NewPasswordPageFormData {
 }
 export interface NewPasswordPageProps {
   loading: boolean;
-  errors: SetPasswordData["errors"];
+  errors: AccountErrorFragment[];
   onSubmit: (data: NewPasswordPageFormData) => SubmitPromise;
 }
 
@@ -25,42 +22,42 @@ const initialForm: NewPasswordPageFormData = {
   confirmPassword: "",
   password: "",
 };
-
 const NewPasswordPage: React.FC<NewPasswordPageProps> = props => {
   const { loading, errors, onSubmit } = props;
-
-  const classes = useStyles(props);
   const intl = useIntl();
 
   return (
     <Form initial={initialForm} onSubmit={onSubmit}>
       {({ change: handleChange, data, submit: handleSubmit }) => {
-        const passwordError =
-          data.password !== data.confirmPassword && data.password.length > 0;
+        const passwordError = data.password !== data.confirmPassword && data.password.length > 0;
 
         return (
           <>
-            <Typography variant="h3" className={classes.header}>
+            <Text size={6} fontWeight="bold" lineHeight={3} marginBottom={2}>
               <FormattedMessage
                 id="WhKGPA"
                 defaultMessage="Set up new password"
                 description="page title"
               />
-            </Typography>
+            </Text>
             {errors.map(error => (
-              <div
-                className={classes.panel}
+              <Box
+                borderRadius={4}
+                padding={4}
+                backgroundColor="critical1"
+                width="100%"
+                marginBottom={2}
                 key={`${error.code}-${error.field}`}
               >
                 {getAccountErrorMessage(error, intl)}
-              </div>
+              </Box>
             ))}
-            <Typography variant="caption" color="textSecondary">
+            <Text size={4} fontWeight="light" color="default2" display="block" marginTop={2}>
               <FormattedMessage
                 id="m0Dz+2"
                 defaultMessage="Please set up a new password for your account. Repeat your new password to make sure you will be able to remember it."
               />
-            </Typography>
+            </Text>
             <FormSpacer />
             <TextField
               autoFocus
@@ -111,7 +108,7 @@ const NewPasswordPage: React.FC<NewPasswordPageProps> = props => {
             <FormSpacer />
             <Button
               data-test-id="button-bar-confirm"
-              className={classes.submit}
+              width="100%"
               disabled={loading || data.password.length === 0 || passwordError}
               variant="primary"
               onClick={handleSubmit}

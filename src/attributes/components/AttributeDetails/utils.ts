@@ -1,6 +1,5 @@
-// @ts-strict-ignore
-import { Choice } from "@dashboard/components/SingleSelectField";
 import { MeasurementUnitsEnum } from "@dashboard/graphql";
+import { Option } from "@saleor/macaw-ui-next";
 import React from "react";
 import { IntlShape, MessageDescriptor } from "react-intl";
 
@@ -26,17 +25,22 @@ const UNIT_MESSAGES_MAPPING = {
   [MeasurementUnitsEnum.SQ_FT]: M.units.squareFt,
   [MeasurementUnitsEnum.SQ_YD]: M.units.squareYd,
   [MeasurementUnitsEnum.SQ_INCH]: M.units.squareInch,
+  [MeasurementUnitsEnum.CUBIC_MILLIMETER]: M.units.cubicMillimeter,
   [MeasurementUnitsEnum.CUBIC_CENTIMETER]: M.units.cubicCentimeter,
   [MeasurementUnitsEnum.CUBIC_DECIMETER]: M.units.cubicDecimeter,
   [MeasurementUnitsEnum.CUBIC_METER]: M.units.cubicMeter,
   [MeasurementUnitsEnum.LITER]: M.units.liter,
   [MeasurementUnitsEnum.CM]: M.units.centimeter,
+  [MeasurementUnitsEnum.DM]: M.units.decimeter,
+  [MeasurementUnitsEnum.MM]: M.units.millimeter,
   [MeasurementUnitsEnum.M]: M.units.meter,
   [MeasurementUnitsEnum.KM]: M.units.kilometer,
   [MeasurementUnitsEnum.G]: M.units.gram,
   [MeasurementUnitsEnum.KG]: M.units.kilogram,
   [MeasurementUnitsEnum.TONNE]: M.units.tonne,
+  [MeasurementUnitsEnum.SQ_MM]: M.units.squareMillimeter,
   [MeasurementUnitsEnum.SQ_CM]: M.units.squareCentimeter,
+  [MeasurementUnitsEnum.SQ_DM]: M.units.squareDecimeter,
   [MeasurementUnitsEnum.SQ_M]: M.units.squareMeter,
   [MeasurementUnitsEnum.SQ_KM]: M.units.squareKilometer,
 };
@@ -46,12 +50,13 @@ export const getMeasurementUnitMessage = (
   formatMessage: IntlShape["formatMessage"],
 ): MessageDescriptor | React.ReactNode => {
   const message = UNIT_MESSAGES_MAPPING[unit];
+
   return typeof message === "string" || React.isValidElement(message)
     ? message
-    : formatMessage(message);
+    : formatMessage(message as MessageDescriptor);
 };
 
-export const unitSystemChoices: Array<Choice<UnitSystem, MessageDescriptor>> = [
+export const unitSystemChoices = [
   {
     label: M.unitSystemMessages.metric,
     value: "metric",
@@ -62,7 +67,7 @@ export const unitSystemChoices: Array<Choice<UnitSystem, MessageDescriptor>> = [
   },
 ];
 
-export const unitTypeChoices: Array<Choice<UnitType, MessageDescriptor>> = [
+export const unitTypeChoices = [
   {
     label: M.unitTypeMessages.volume,
     value: "volume",
@@ -93,37 +98,30 @@ export const unitMapping = {
       MeasurementUnitsEnum.ACRE_IN,
       MeasurementUnitsEnum.ACRE_FT,
     ],
-    distance: [
-      MeasurementUnitsEnum.FT,
-      MeasurementUnitsEnum.YD,
-      MeasurementUnitsEnum.INCH,
-    ],
+    distance: [MeasurementUnitsEnum.FT, MeasurementUnitsEnum.YD, MeasurementUnitsEnum.INCH],
     weight: [MeasurementUnitsEnum.LB, MeasurementUnitsEnum.OZ],
-    area: [
-      MeasurementUnitsEnum.SQ_FT,
-      MeasurementUnitsEnum.SQ_YD,
-      MeasurementUnitsEnum.SQ_INCH,
-    ],
+    area: [MeasurementUnitsEnum.SQ_FT, MeasurementUnitsEnum.SQ_YD, MeasurementUnitsEnum.SQ_INCH],
   },
   metric: {
     volume: [
+      MeasurementUnitsEnum.CUBIC_MILLIMETER,
       MeasurementUnitsEnum.CUBIC_CENTIMETER,
       MeasurementUnitsEnum.CUBIC_DECIMETER,
       MeasurementUnitsEnum.CUBIC_METER,
       MeasurementUnitsEnum.LITER,
     ],
     distance: [
+      MeasurementUnitsEnum.MM,
       MeasurementUnitsEnum.CM,
+      MeasurementUnitsEnum.DM,
       MeasurementUnitsEnum.M,
       MeasurementUnitsEnum.KM,
     ],
-    weight: [
-      MeasurementUnitsEnum.G,
-      MeasurementUnitsEnum.KG,
-      MeasurementUnitsEnum.TONNE,
-    ],
+    weight: [MeasurementUnitsEnum.G, MeasurementUnitsEnum.KG, MeasurementUnitsEnum.TONNE],
     area: [
+      MeasurementUnitsEnum.SQ_MM,
       MeasurementUnitsEnum.SQ_CM,
+      MeasurementUnitsEnum.SQ_DM,
       MeasurementUnitsEnum.SQ_M,
       MeasurementUnitsEnum.SQ_KM,
     ],
@@ -151,7 +149,7 @@ export const getUnitChoices = (
   formatMessage: IntlShape["formatMessage"],
 ): {
   [key in UnitSystem]: {
-    [key in UnitType]: Array<Choice<MeasurementUnitsEnum>>;
+    [key in UnitType]: Option[];
   };
 } =>
   Object.entries(unitMapping).reduce(
@@ -162,6 +160,6 @@ export const getUnitChoices = (
     {},
   ) as {
     [key in UnitSystem]: {
-      [key in UnitType]: Array<Choice<MeasurementUnitsEnum>>;
+      [key in UnitType]: Option[];
     };
   };

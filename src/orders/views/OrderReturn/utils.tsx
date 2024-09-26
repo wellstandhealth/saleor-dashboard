@@ -11,10 +11,15 @@ import {
   FormsetQuantityData,
   OrderReturnFormData,
 } from "@dashboard/orders/components/OrderReturnPage/form";
+import { MessageDescriptor } from "react-intl";
+
+import { messages } from "./messages";
 
 class ReturnFormDataParser {
   private readonly order: OrderDetailsFragment;
+
   private readonly formData: OrderReturnFormData;
+
   private readonly refundsEnabled: boolean;
 
   constructor(data: {
@@ -34,19 +39,14 @@ class ReturnFormDataParser {
       unfulfilledItemsQuantities,
       refundShipmentCosts,
     } = this.formData;
-
-    const fulfillmentLines =
-      this.getParsedLineData<OrderReturnFulfillmentLineInput>(
-        fulfilledItemsQuantities,
-        "fulfillmentLineId",
-      );
-
-    const waitingLines =
-      this.getParsedLineData<OrderReturnFulfillmentLineInput>(
-        waitingItemsQuantities,
-        "fulfillmentLineId",
-      );
-
+    const fulfillmentLines = this.getParsedLineData<OrderReturnFulfillmentLineInput>(
+      fulfilledItemsQuantities,
+      "fulfillmentLineId",
+    );
+    const waitingLines = this.getParsedLineData<OrderReturnFulfillmentLineInput>(
+      waitingItemsQuantities,
+      "fulfillmentLineId",
+    );
     const orderLines = this.getParsedLineData<OrderReturnLineInput>(
       unfulfilledItemsQuantities,
       "orderLineId",
@@ -72,8 +72,7 @@ class ReturnFormDataParser {
   };
 
   private readonly getAmountToRefund = (): number | undefined =>
-    this.formData.amountCalculationMode ===
-    OrderRefundAmountCalculationMode.MANUAL
+    this.formData.amountCalculationMode === OrderRefundAmountCalculationMode.MANUAL
       ? this.formData.amount
       : undefined;
 
@@ -92,10 +91,7 @@ class ReturnFormDataParser {
 
       const shouldReplace = !!itemsToBeReplaced.find(getById(id))?.value;
 
-      return [
-        ...result,
-        { [idKey]: id, quantity, replace: shouldReplace } as unknown as T,
-      ];
+      return [...result, { [idKey]: id, quantity, replace: shouldReplace } as unknown as T];
     }, []);
   };
 
@@ -105,13 +101,12 @@ class ReturnFormDataParser {
   ) => {
     if (
       !this.order.totalCaptured?.amount ||
-      this.formData.amountCalculationMode ===
-        OrderRefundAmountCalculationMode.NONE
+      this.formData.amountCalculationMode === OrderRefundAmountCalculationMode.NONE
     ) {
       return false;
     }
 
-    if (!!this.getAmountToRefund()) {
+    if (this.getAmountToRefund()) {
       return true;
     }
 
@@ -130,3 +125,15 @@ class ReturnFormDataParser {
 }
 
 export default ReturnFormDataParser;
+
+export const getSuccessMessage = (isGrantRefund, isSendRefund): MessageDescriptor => {
+  if (isSendRefund) {
+    return messages.successAlertWithSend;
+  }
+
+  if (isGrantRefund) {
+    return messages.successAlertWithGrant;
+  }
+
+  return messages.successAlert;
+};

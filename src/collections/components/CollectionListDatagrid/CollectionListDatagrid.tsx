@@ -16,23 +16,15 @@ import { Box, useTheme } from "@saleor/macaw-ui-next";
 import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import {
-  collectionListStaticColumnsAdapter,
-  createGetCellContent,
-} from "./datagrid";
+import { collectionListStaticColumnsAdapter, createGetCellContent } from "./datagrid";
 import { messages } from "./messages";
 
-interface CollectionListDatagridProps
-  extends ListProps,
-    SortPage<CollectionListUrlSortField> {
+interface CollectionListDatagridProps extends ListProps, SortPage<CollectionListUrlSortField> {
   collections: Collections;
   loading: boolean;
   selectedChannelId: string;
   hasRowHover?: boolean;
-  onSelectCollectionIds: (
-    rowsIndex: number[],
-    clearSelection: () => void,
-  ) => void;
+  onSelectCollectionIds: (rowsIndex: number[], clearSelection: () => void) => void;
   onRowClick: (id: string) => void;
   rowAnchor?: (id: string) => string;
 }
@@ -53,14 +45,12 @@ export const CollectionListDatagrid = ({
   selectedChannelId,
 }: CollectionListDatagridProps) => {
   const intl = useIntl();
-  const { theme: currentTheme, themeValues } = useTheme();
+  const { theme: currentTheme } = useTheme();
   const datagrid = useDatagridChangeState();
-
   const collectionListStaticColumns = useMemo(
     () => collectionListStaticColumnsAdapter(intl, sort),
     [intl, sort],
   );
-
   const onColumnChange = useCallback(
     (picked: string[]) => {
       if (onUpdateListSettings) {
@@ -69,19 +59,13 @@ export const CollectionListDatagrid = ({
     },
     [onUpdateListSettings],
   );
-
-  const {
-    handlers,
-    visibleColumns,
-    staticColumns,
-    selectedColumns,
-    recentlyAddedColumn,
-  } = useColumns({
-    staticColumns: collectionListStaticColumns,
-    selectedColumns: settings?.columns ?? [],
-    onSave: onColumnChange,
-  });
-
+  const { handlers, visibleColumns, staticColumns, selectedColumns, recentlyAddedColumn } =
+    useColumns({
+      gridName: "collection_list",
+      staticColumns: collectionListStaticColumns,
+      selectedColumns: settings?.columns ?? [],
+      onSave: onColumnChange,
+    });
   const getCellContent = useCallback(
     createGetCellContent({
       collections,
@@ -89,40 +73,33 @@ export const CollectionListDatagrid = ({
       columns: visibleColumns,
       selectedChannelId,
       currentTheme,
-      theme: themeValues,
     }),
-    [
-      collections,
-      intl,
-      visibleColumns,
-      selectedChannelId,
-      currentTheme,
-      themeValues,
-    ],
+    [collections, intl, visibleColumns, selectedChannelId, currentTheme],
   );
-
   const handleRowClick = useCallback(
     ([_, row]: Item) => {
       if (!onRowClick) {
         return;
       }
+
       const rowData: Collection = collections[row];
+
       onRowClick(rowData.id);
     },
     [onRowClick, collections],
   );
-
   const handleRowAnchor = useCallback(
     ([, row]: Item) => {
       if (!rowAnchor) {
         return "";
       }
+
       const rowData: Collection = collections[row];
+
       return rowAnchor(rowData.id);
     },
     [rowAnchor, collections],
   );
-
   const handleGetColumnTooltipContent = useCallback(
     (col: number): string => {
       const columnName = visibleColumns[col].id as CollectionListUrlSortField;
@@ -138,7 +115,6 @@ export const CollectionListDatagrid = ({
     },
     [filterDependency, intl, selectedChannelId, visibleColumns],
   );
-
   const handleHeaderClick = useCallback(
     (col: number) => {
       const columnName = visibleColumns[col].id as CollectionListUrlSortField;
@@ -160,7 +136,7 @@ export const CollectionListDatagrid = ({
         hasRowHover={hasRowHover}
         onColumnMoved={handlers.onMove}
         onColumnResize={handlers.onResize}
-        verticalBorder={col => col > 0}
+        verticalBorder={false}
         rows={collections?.length ?? 0}
         availableColumns={visibleColumns}
         emptyText={intl.formatMessage(messages.empty)}

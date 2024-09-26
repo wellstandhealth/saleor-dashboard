@@ -1,14 +1,8 @@
 import Form from "@dashboard/components/Form";
-import FormSpacer from "@dashboard/components/FormSpacer";
+import { DashboardModal } from "@dashboard/components/Modal";
 import { ProductFragment } from "@dashboard/graphql";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import { buttonMessages } from "@dashboard/intl";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@material-ui/core";
 import { Button, Input, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
@@ -31,7 +25,6 @@ const messages = defineMessages({
     description: "modal button",
   },
 });
-
 const ProductExternalMediaDialog: React.FC<ProductExternalMediaDialogProps> = ({
   open,
   onClose,
@@ -41,31 +34,31 @@ const ProductExternalMediaDialog: React.FC<ProductExternalMediaDialogProps> = ({
   const initialValues: FormValues = {
     mediaUrl: "",
   };
-
   const handleOnSubmit = (values: FormValues) => {
     onSubmit(values.mediaUrl);
     onClose();
   };
 
   return (
-    <Dialog onClose={onClose} open={open}>
-      <DialogTitle disableTypography>
-        <Text variant="heading">
-          {intl.formatMessage(messages.buttonMessage)}
-        </Text>
-      </DialogTitle>
-      <Form initial={initialValues} onSubmit={handleOnSubmit}>
-        {({ change, data, submit }) => (
-          <>
-            <DialogContent>
-              <Text variant="caption">
+    <DashboardModal onChange={onClose} open={open}>
+      <DashboardModal.Content size="sm">
+        <Form initial={initialValues} onSubmit={handleOnSubmit}>
+          {({ change, data, submit }) => (
+            <DashboardModal.Grid>
+              <DashboardModal.Title>
+                <Text size={5} fontWeight="bold">
+                  {intl.formatMessage(messages.buttonMessage)}
+                </Text>
+              </DashboardModal.Title>
+
+              <Text size={2}>
                 <FormattedMessage
                   id="zDvDnG"
                   defaultMessage="Media from the URL you supply will be shown in the media gallery. You will be able to define the order of the gallery."
                   description="modal header"
                 />
               </Text>
-              <FormSpacer />
+
               <Input
                 label="URL"
                 value={data.mediaUrl}
@@ -75,20 +68,18 @@ const ProductExternalMediaDialog: React.FC<ProductExternalMediaDialogProps> = ({
                 autoFocus
                 size="medium"
               />
-            </DialogContent>
 
-            <DialogActions>
-              <Button variant="secondary" onClick={onClose}>
-                <FormattedMessage {...buttonMessages.back} />
-              </Button>
-              <Button onClick={submit}>
-                {intl.formatMessage(messages.buttonMessage)}
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Form>
-    </Dialog>
+              <DashboardModal.Actions>
+                <Button variant="secondary" onClick={onClose}>
+                  <FormattedMessage {...buttonMessages.back} />
+                </Button>
+                <Button onClick={submit}>{intl.formatMessage(messages.buttonMessage)}</Button>
+              </DashboardModal.Actions>
+            </DashboardModal.Grid>
+          )}
+        </Form>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
 

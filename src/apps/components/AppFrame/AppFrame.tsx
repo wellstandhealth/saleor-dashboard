@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { useAppDashboardUpdates } from "@dashboard/apps/components/AppFrame/useAppDashboardUpdates";
 import { useUpdateAppToken } from "@dashboard/apps/components/AppFrame/useUpdateAppToken";
 import { AppDetailsUrlQueryParams } from "@dashboard/apps/urls";
@@ -36,13 +35,12 @@ export const AppFrame: React.FC<Props> = ({
   onError,
   refetch,
   dashboardVersion,
-  coreVersion,
+  coreVersion = "",
 }) => {
   const frameRef = React.useRef<HTMLIFrameElement | null>(null);
   const classes = useStyles();
   const appOrigin = getOrigin(src);
   const flags = useAllFlags();
-
   /**
    * React on messages from App
    */
@@ -61,7 +59,6 @@ export const AppFrame: React.FC<Props> = ({
    * Listen to Dashboard context like theme or locale and inform app about it
    */
   useAppDashboardUpdates(frameRef.current, appOrigin, handshakeDone, appId);
-
   useTokenRefresh(appToken, refetch);
 
   const handleLoad = useCallback(() => {
@@ -77,7 +74,6 @@ export const AppFrame: React.FC<Props> = ({
         dashboard: dashboardVersion,
       }),
     );
-
     setHandshakeDone(true);
   }, [appToken, postToExtension, setHandshakeDone]);
 

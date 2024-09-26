@@ -5,12 +5,10 @@ interface DetailPageLayoutRightSidebarProps {
   children: React.ReactNode;
 }
 
-export const RightSidebar: React.FC<DetailPageLayoutRightSidebarProps> = ({
-  children,
-}) => (
+export const RightSidebar: React.FC<DetailPageLayoutRightSidebarProps> = ({ children }) => (
   <Box
     borderLeftStyle="solid"
-    borderColor="neutralPlain"
+    borderColor="default1"
     height="100%"
     overflowY="auto"
     className="hide-scrollbar"

@@ -6,14 +6,19 @@ import { Box } from "@saleor/macaw-ui-next";
 import React, { memo } from "react";
 
 import { MetadataCard, MetadataCardProps } from "./MetadataCard";
+import { MetadataLoadingCard } from "./MetadataLoadingCard";
 import { EventDataAction, EventDataField } from "./types";
 import { getDataKey, parseEventData } from "./utils";
 
-export interface MetadataProps
-  extends Omit<MetadataCardProps, "data" | "isPrivate"> {
-  data: Record<"metadata" | "privateMetadata", MetadataInput[]>;
+export interface MetadataProps extends Omit<MetadataCardProps, "data" | "isPrivate"> {
+  data: {
+    metadata: MetadataInput[];
+    privateMetadata: MetadataInput[] | undefined;
+  };
   isLoading?: boolean;
   readonly?: boolean;
+  // This props is used to hide the private metadata section when user doesn't have enough permissions.
+  hidePrivateMetadata?: boolean;
 }
 
 const propsCompare = (_, newProps: MetadataProps) => {
@@ -30,8 +35,10 @@ const propsCompare = (_, newProps: MetadataProps) => {
   return false;
 };
 
+// TODO: Refactor loading state logic
+// TODO: Split "Metadata" component into "Metadata" and "PrivateMetadata" components
 export const Metadata: React.FC<MetadataProps> = memo(
-  ({ data, onChange, readonly = false }) => {
+  ({ data, onChange, isLoading, readonly = false, hidePrivateMetadata = false }) => {
     const change = (event: ChangeEvent, isPrivate: boolean) => {
       const { action, field, fieldIndex, value } = parseEventData(event);
       const key = getDataKey(isPrivate);
@@ -45,45 +52,50 @@ export const Metadata: React.FC<MetadataProps> = memo(
               ? updateAtIndex(
                   {
                     ...dataToUpdate[fieldIndex],
-                    key:
-                      field === EventDataField.name
-                        ? value
-                        : dataToUpdate[fieldIndex].key,
-                    value:
-                      field === EventDataField.value
-                        ? value
-                        : dataToUpdate[fieldIndex].value,
+                    key: field === EventDataField.name ? value : dataToUpdate[fieldIndex].key,
+                    value: field === EventDataField.value ? value : dataToUpdate[fieldIndex].value,
                   },
                   dataToUpdate,
                   fieldIndex,
                 )
               : action === EventDataAction.add
-              ? [
-                  ...dataToUpdate,
-                  {
-                    key: "",
-                    value: "",
-                  },
-                ]
-              : removeAtIndex(dataToUpdate, fieldIndex),
+                ? [
+                    ...dataToUpdate,
+                    {
+                      key: "",
+                      value: "",
+                    },
+                  ]
+                : removeAtIndex(dataToUpdate, fieldIndex),
         },
       });
     };
 
     return (
       <Box display="grid" gap={2} paddingBottom={6}>
-        <MetadataCard
-          data={data?.metadata}
-          isPrivate={false}
-          readonly={readonly}
-          onChange={event => change(event, false)}
-        />
-        <MetadataCard
-          data={data?.privateMetadata}
-          isPrivate={true}
-          readonly={readonly}
-          onChange={event => change(event, true)}
-        />
+        {isLoading ? (
+          <>
+            <MetadataLoadingCard />
+            {!hidePrivateMetadata && <MetadataLoadingCard isPrivate />}
+          </>
+        ) : (
+          <>
+            <MetadataCard
+              data={data?.metadata}
+              isPrivate={false}
+              readonly={readonly}
+              onChange={event => change(event, false)}
+            />
+            {(data?.privateMetadata || !hidePrivateMetadata) && (
+              <MetadataCard
+                data={data?.privateMetadata}
+                isPrivate={true}
+                readonly={readonly}
+                onChange={event => change(event, true)}
+              />
+            )}
+          </>
+        )}
       </Box>
     );
   },

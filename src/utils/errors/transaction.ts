@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import {
   TransactionCreateErrorCode,
   TransactionCreateErrorFragment,
@@ -11,8 +10,7 @@ import { getCommonFormFieldErrorMessage } from "./common";
 
 export const transactionRequestMessages = defineMessages({
   missingWebhook: {
-    defaultMessage:
-      "No app or plugin is configured to handle requested transaction action",
+    defaultMessage: "No app or plugin is configured to handle requested transaction action",
     id: "qDfaDI",
   },
   notFound: {
@@ -37,8 +35,10 @@ export function getOrderTransactionErrorMessage(
         return intl.formatMessage(transactionRequestMessages.notFound);
     }
 
-    return getCommonFormFieldErrorMessage(err, intl);
+    return getCommonFormFieldErrorMessage(err, intl) || "";
   }
+
+  return "";
 }
 
 export const transactionCreateMessages = defineMessages({
@@ -74,6 +74,8 @@ export function getTransactionCreateErrorMessage(
         return intl.formatMessage(transactionCreateMessages.incorrectCurrency);
     }
 
-    return getCommonFormFieldErrorMessage(err, intl);
+    return getCommonFormFieldErrorMessage(err, intl) || "";
   }
+
+  return "";
 }

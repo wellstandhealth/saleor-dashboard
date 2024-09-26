@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import ActionDialog from "@dashboard/components/ActionDialog";
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
@@ -16,13 +15,12 @@ import usePaginator, {
   PaginatorContext,
 } from "@dashboard/hooks/usePaginator";
 import { useRowSelection } from "@dashboard/hooks/useRowSelection";
-import { maybe } from "@dashboard/misc";
 import { ListViews } from "@dashboard/types";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import createSortHandler from "@dashboard/utils/handlers/sortHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getSortParams } from "@dashboard/utils/sort";
-import { DialogContentText } from "@material-ui/core";
+import { Box } from "@saleor/macaw-ui-next";
 import isEqual from "lodash/isEqual";
 import React, { useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -44,20 +42,14 @@ interface CategoryListProps {
 export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
   const navigate = useNavigator();
   const intl = useIntl();
-
-  const { updateListSettings, settings } = useListSettings(
-    ListViews.CATEGORY_LIST,
-  );
-
+  const { updateListSettings, settings } = useListSettings(ListViews.CATEGORY_LIST);
   const handleSort = createSortHandler(navigate, categoryListUrl, params);
-
   const {
     selectedRowIds,
     setSelectedRowIds,
     clearRowSelection,
     setClearDatagridRowSelectionCallback,
   } = useRowSelection(params);
-
   const {
     hasPresetsChanged,
     onPresetChange,
@@ -74,13 +66,13 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
     getUrl: categoryListUrl,
     reset: clearRowSelection,
   });
-
   const [openModal, closeModal] = createDialogActionHandlers<
     CategoryListUrlDialog,
     CategoryListUrlQueryParams
   >(navigate, categoryListUrl, params);
 
   usePaginationReset(categoryListUrl, params, settings.rowNumber);
+
   const paginationState = createPaginationState(settings.rowNumber, params);
   const queryVariables = React.useMemo(
     () => ({
@@ -90,19 +82,16 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
     }),
     [paginationState, params],
   );
-
-  const { data, loading, refetch } = useRootCategoriesQuery({
+  const { data, refetch } = useRootCategoriesQuery({
     displayLoader: true,
     variables: queryVariables,
   });
   const categories = mapEdgesToItems(data?.categories);
-
   const paginationValues = usePaginator({
     pageInfo: data?.categories?.pageInfo,
     paginationState,
     queryString: params,
   });
-
   const changeFilterField = (filter: CategoryListUrlFilters) => {
     clearRowSelection();
     navigate(
@@ -113,17 +102,13 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
       }),
     );
   };
-
-  const handleCategoryBulkDeleteOnComplete = (
-    data: CategoryBulkDeleteMutation,
-  ) => {
-    if (data.categoryBulkDelete.errors.length === 0) {
+  const handleCategoryBulkDeleteOnComplete = (data: CategoryBulkDeleteMutation) => {
+    if (data?.categoryBulkDelete?.errors.length === 0) {
       navigate(categoryListUrl(), { replace: true });
       refetch();
       clearRowSelection();
     }
   };
-
   const handleSetSelectedCategoryIds = useCallback(
     (rows: number[], clearSelection: () => void) => {
       if (!categories) {
@@ -139,19 +124,11 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
 
       setClearDatagridRowSelectionCallback(clearSelection);
     },
-    [
-      categories,
-      setClearDatagridRowSelectionCallback,
-      selectedRowIds,
-      setSelectedRowIds,
-    ],
+    [categories, setClearDatagridRowSelectionCallback, selectedRowIds, setSelectedRowIds],
   );
-
-  const [categoryBulkDelete, categoryBulkDeleteOpts] =
-    useCategoryBulkDeleteMutation({
-      onCompleted: handleCategoryBulkDeleteOnComplete,
-    });
-
+  const [categoryBulkDelete, categoryBulkDeleteOpts] = useCategoryBulkDeleteMutation({
+    onCompleted: handleCategoryBulkDeleteOnComplete,
+  });
   const handleCategoryBulkDelete = useCallback(async () => {
     await categoryBulkDelete({
       variables: {
@@ -165,7 +142,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
     <PaginatorContext.Provider value={paginationValues}>
       <CategoryListPage
         hasPresetsChanged={hasPresetsChanged()}
-        categories={mapEdgesToItems(data?.categories)}
+        categories={mapEdgesToItems(data?.categories)!}
         currentTab={selectedPreset}
         initialSearch={params.query || ""}
         onSearchChange={query => changeFilterField({ query })}
@@ -181,7 +158,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
         settings={settings}
         sort={getSortParams(params)}
         onSort={handleSort}
-        disabled={loading}
+        disabled={!data}
         onUpdateListSettings={(...props) => {
           clearRowSelection();
           updateListSettings(...props);
@@ -211,24 +188,24 @@ export const CategoryList: React.FC<CategoryListProps> = ({ params }) => {
         })}
         variant="delete"
       >
-        <DialogContentText>
-          <FormattedMessage
-            id="Pp/7T7"
-            defaultMessage="{counter,plural,one{Are you sure you want to delete this category?} other{Are you sure you want to delete {displayQuantity} categories?}}"
-            values={{
-              counter: maybe(() => params.ids.length),
-              displayQuantity: (
-                <strong>{maybe(() => params.ids.length)}</strong>
-              ),
-            }}
-          />
-        </DialogContentText>
-        <DialogContentText>
-          <FormattedMessage
-            id="e+L+q3"
-            defaultMessage="Remember this will also delete all products assigned to this category."
-          />
-        </DialogContentText>
+        <Box display="grid" gap={2}>
+          <Box>
+            <FormattedMessage
+              id="Pp/7T7"
+              defaultMessage="{counter,plural,one{Are you sure you want to delete this category?} other{Are you sure you want to delete {displayQuantity} categories?}}"
+              values={{
+                counter: params?.ids?.length,
+                displayQuantity: <strong>{params?.ids?.length}</strong>,
+              }}
+            />
+          </Box>
+          <Box>
+            <FormattedMessage
+              id="e+L+q3"
+              defaultMessage="Remember this will also delete all products assigned to this category."
+            />
+          </Box>
+        </Box>
       </ActionDialog>
 
       <SaveFilterTabDialog

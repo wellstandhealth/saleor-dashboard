@@ -1,8 +1,6 @@
 import { DateTime } from "@dashboard/components/Date";
-import {
-  EventDeliveryStatusEnum,
-  useAppWebhookDeliveriesQuery,
-} from "@dashboard/graphql";
+import { EventDeliveryStatusEnum, useAppWebhookDeliveriesQuery } from "@dashboard/graphql";
+import { useHasManagedAppsPermission } from "@dashboard/hooks/useHasManagedAppsPermission";
 import {
   Accordion,
   Box,
@@ -24,7 +22,7 @@ const Wrapper = (boxProps: BoxProps) => {
 
   return (
     <Box {...boxProps}>
-      <Text variant={"heading"} marginBottom={4} as={"h2"}>
+      <Text size={5} fontWeight="bold" marginBottom={4} as={"h2"}>
         {intl.formatMessage({
           defaultMessage: "App Webhooks",
           id: "eQ7bCN",
@@ -41,38 +39,31 @@ const Wrapper = (boxProps: BoxProps) => {
     </Box>
   );
 };
-
 const mapDeliveryStatusToTextColor = (
   status: EventDeliveryStatusEnum,
-): keyof ThemeTokensValues["colors"]["foreground"] => {
+): keyof ThemeTokensValues["colors"]["text"] => {
   switch (status) {
     case EventDeliveryStatusEnum.FAILED:
-      return "textCriticalDefault";
+      return "critical1";
     case EventDeliveryStatusEnum.PENDING:
-      return "textBrandDefault";
+      return "accent1";
     case EventDeliveryStatusEnum.SUCCESS:
-      return "text1Decorative";
+      return "success1";
   }
 };
-
 const mapDeliveryStatusToBackgroundColor = (
   status: EventDeliveryStatusEnum,
 ): keyof ThemeTokensValues["colors"]["background"] => {
   switch (status) {
     case EventDeliveryStatusEnum.FAILED:
-      return "surfaceCriticalSubdued";
+      return "default2";
     case EventDeliveryStatusEnum.PENDING:
-      return "surfaceNeutralHighlight";
+      return "default1";
     case EventDeliveryStatusEnum.SUCCESS:
-      return "surfaceBrandSubdued";
+      return "accent1";
   }
 };
-
-const DeliveryStatusDisplay = ({
-  status,
-}: {
-  status: EventDeliveryStatusEnum;
-}) => {
+const DeliveryStatusDisplay = ({ status }: { status: EventDeliveryStatusEnum }) => {
   const { formatMessage } = useIntl();
 
   switch (status) {
@@ -82,11 +73,10 @@ const DeliveryStatusDisplay = ({
       return <>{formatMessage({ defaultMessage: "Pending", id: "eKEL/g" })}</>;
     case EventDeliveryStatusEnum.SUCCESS:
       return <>{formatMessage({ defaultMessage: "Success", id: "xrKHS6" })} </>;
+    default:
+      throw new Error("Invalid EventDeliveryStatusEnum value");
   }
-
-  throw new Error("Invalid EventDeliveryStatusEnum value");
 };
-
 const StatusChip = ({ status }: { status: EventDeliveryStatusEnum }) => {
   return (
     <Chip backgroundColor={mapDeliveryStatusToBackgroundColor(status)}>
@@ -96,13 +86,12 @@ const StatusChip = ({ status }: { status: EventDeliveryStatusEnum }) => {
     </Chip>
   );
 };
-
 const DisabledWebhookChip = () => {
   const { formatMessage } = useIntl();
 
   return (
-    <Chip backgroundColor="surfaceNeutralHighlight">
-      <Text color="textNeutralDefault">
+    <Chip backgroundColor="default1">
+      <Text color="default1">
         {formatMessage({
           defaultMessage: "Disabled",
           id: "tthToS",
@@ -111,20 +100,17 @@ const DisabledWebhookChip = () => {
     </Chip>
   );
 };
-
 /**
  * Refresh webhooks deliveries every 5 seconds
  */
 const REFRESH_INTERVAL = 5000;
 
-export const AppWebhooksDisplay = ({
-  appId,
-  ...boxProps
-}: AppWebhooksDisplayProps) => {
+export const AppWebhooksDisplay = ({ appId, ...boxProps }: AppWebhooksDisplayProps) => {
   const { formatMessage } = useIntl();
-
+  const { hasManagedAppsPermission } = useHasManagedAppsPermission();
   const { data: webhooksData, loading } = useAppWebhookDeliveriesQuery({
     variables: { appId },
+    skip: !hasManagedAppsPermission,
     pollInterval: REFRESH_INTERVAL,
   });
 
@@ -143,13 +129,8 @@ export const AppWebhooksDisplay = ({
       <Wrapper {...boxProps}>
         <Accordion>
           {webhooksData.app.webhooks.map((wh, index) => {
-            const isLastWebhook =
-              index === (webhooksData?.app?.webhooks ?? []).length - 1;
-
-            const events = [...wh.asyncEvents, ...wh.syncEvents]
-              .flatMap(e => e.name)
-              .join(", ");
-
+            const isLastWebhook = index === (webhooksData?.app?.webhooks ?? []).length - 1;
+            const events = [...wh.asyncEvents, ...wh.syncEvents].flatMap(e => e.name).join(", ");
             const eventDeliveries = wh.eventDeliveries?.edges ?? [];
 
             return (
@@ -157,28 +138,21 @@ export const AppWebhooksDisplay = ({
                 key={wh.id}
                 padding={4}
                 borderBottomWidth={isLastWebhook ? 0 : 1}
-                borderColor="neutralHighlight"
+                borderColor="default1"
                 borderBottomStyle="solid"
               >
                 <Box>
-                  <Box
-                    display="flex"
-                    gap={2}
-                    alignItems="center"
-                    marginBottom={2}
-                  >
+                  <Box display="flex" gap={2} alignItems="center" marginBottom={2}>
                     <Text>{wh.name}</Text>
                     {!wh.isActive && <DisabledWebhookChip />}
                   </Box>
-                  <Text variant="caption" size="small">
-                    {events}
-                  </Text>
+                  <Text size={1}>{events}</Text>
                 </Box>
                 {eventDeliveries.length > 0 && (
                   <Accordion.Item
                     value={wh.id}
                     marginTop={6}
-                    borderColor="neutralHighlight"
+                    borderColor="default1"
                     borderWidth={1}
                     borderStyle="solid"
                     paddingY={2}
@@ -186,10 +160,9 @@ export const AppWebhooksDisplay = ({
                     borderRadius={4}
                   >
                     <Accordion.Trigger alignItems="center">
-                      <Text variant="button" as="h2">
+                      <Text size={4} fontWeight="bold" as="h2">
                         {formatMessage({
-                          defaultMessage:
-                            "Pending & failed deliveries (last 10)",
+                          defaultMessage: "Pending & failed deliveries (last 10)",
                           id: "SRMNCS",
                         })}
                       </Text>
@@ -199,19 +172,13 @@ export const AppWebhooksDisplay = ({
                       {eventDeliveries.map(ed => {
                         const { createdAt } = ed.node;
                         const attempts = ed.node.attempts?.edges ?? [];
-
                         const attemptsCount = attempts.length;
-                        const lastAttemptDate =
-                          attempts[attemptsCount - 1]?.node.createdAt;
+                        const lastAttemptDate = attempts[attemptsCount - 1]?.node.createdAt;
 
                         return (
                           <Box key={createdAt} marginBottom={4}>
-                            <Box
-                              paddingLeft={0}
-                              display="grid"
-                              __gridTemplateColumns={"1fr 1fr"}
-                            >
-                              <Text as="p" variant="bodyStrong">
+                            <Box paddingLeft={0} display="grid" __gridTemplateColumns={"1fr 1fr"}>
+                              <Text as="p" size={4} fontWeight="bold">
                                 <DateTime plain date={createdAt} />
                               </Text>
                               <Box marginLeft="auto">
@@ -225,7 +192,7 @@ export const AppWebhooksDisplay = ({
                                     defaultMessage: "Attempts:",
                                     id: "OFTsI1",
                                   })}{" "}
-                                  <Text variant="bodyStrong">
+                                  <Text size={4} fontWeight="bold">
                                     {attemptsCount} / 6
                                   </Text>
                                 </Text>

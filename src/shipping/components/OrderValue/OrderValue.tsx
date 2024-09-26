@@ -1,6 +1,5 @@
-// @ts-strict-ignore
 import { ChannelShippingData } from "@dashboard/channels/utils";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import ControlledCheckbox from "@dashboard/components/ControlledCheckbox";
 import PriceField from "@dashboard/components/PriceField";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
@@ -8,12 +7,10 @@ import TableHead from "@dashboard/components/TableHead";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import { ShippingChannelsErrorFragment } from "@dashboard/graphql";
 import { ChangeEvent } from "@dashboard/hooks/useForm";
-import {
-  getFormChannelError,
-  getFormChannelErrors,
-} from "@dashboard/utils/errors";
+import { ChannelError, getFormChannelError, getFormChannelErrors } from "@dashboard/utils/errors";
 import getShippingErrorMessage from "@dashboard/utils/errors/shipping";
-import { Card, TableBody, TableCell, Typography } from "@material-ui/core";
+import { TableBody, TableCell } from "@material-ui/core";
+import { Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -22,6 +19,7 @@ import { useStyles } from "./styles";
 interface Value {
   maxValue: string;
   minValue: string;
+  price: string;
 }
 export interface OrderValueProps {
   channels: ChannelShippingData[];
@@ -46,18 +44,20 @@ export const OrderValue: React.FC<OrderValueProps> = ({
   const intl = useIntl();
   const formErrors = getFormChannelErrors(
     ["maximumOrderPrice", "minimumOrderPrice"],
-    errors,
+    errors as ChannelError[],
   );
 
   return (
-    <Card data-test-id="order-value">
-      <CardTitle
-        title={intl.formatMessage({
-          id: "yatGsm",
-          defaultMessage: "Order Value",
-          description: "card title",
-        })}
-      />
+    <DashboardCard data-test-id="order-value">
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "yatGsm",
+            defaultMessage: "Order Value",
+            description: "card title",
+          })}
+        </DashboardCard.Title>
+      </DashboardCard.Header>
       <div className={classes.content}>
         <div className={classes.subheader}>
           <ControlledCheckbox
@@ -70,13 +70,13 @@ export const OrderValue: React.FC<OrderValueProps> = ({
                   defaultMessage="Restrict order value"
                   description="checkbox label"
                 />
-                <Typography variant="caption">
+                <Text size={2} fontWeight="light" display="block">
                   {intl.formatMessage({
                     id: "aZDHYr",
                     defaultMessage: "This rate will apply to all orders",
                     description: "price rates info",
                   })}
-                </Typography>
+                </Text>
               </>
             }
             checked={orderValueRestricted}
@@ -117,19 +117,13 @@ export const OrderValue: React.FC<OrderValueProps> = ({
             </TableHead>
             <TableBody>
               {channels?.map(channel => {
-                const minError = getFormChannelError(
-                  formErrors.minimumOrderPrice,
-                  channel.id,
-                );
-                const maxError = getFormChannelError(
-                  formErrors.maximumOrderPrice,
-                  channel.id,
-                );
+                const minError = getFormChannelError(formErrors.minimumOrderPrice, channel.id);
+                const maxError = getFormChannelError(formErrors.maximumOrderPrice, channel.id);
 
                 return (
                   <TableRowLink key={channel.id}>
                     <TableCell>
-                      <Typography>{channel.name}</Typography>
+                      <Text>{channel.name}</Text>
                     </TableCell>
                     <TableCell className={classes.price}>
                       <PriceField
@@ -149,9 +143,7 @@ export const OrderValue: React.FC<OrderValueProps> = ({
                           })
                         }
                         currencySymbol={channel.currency}
-                        hint={
-                          minError && getShippingErrorMessage(minError, intl)
-                        }
+                        hint={minError && getShippingErrorMessage(minError, intl)}
                       />
                     </TableCell>
                     <TableCell className={classes.price}>
@@ -173,9 +165,7 @@ export const OrderValue: React.FC<OrderValueProps> = ({
                           })
                         }
                         currencySymbol={channel.currency}
-                        hint={
-                          maxError && getShippingErrorMessage(maxError, intl)
-                        }
+                        hint={maxError && getShippingErrorMessage(maxError, intl)}
                       />
                     </TableCell>
                   </TableRowLink>
@@ -185,7 +175,7 @@ export const OrderValue: React.FC<OrderValueProps> = ({
           </ResponsiveTable>
         )}
       </div>
-    </Card>
+    </DashboardCard>
   );
 };
 

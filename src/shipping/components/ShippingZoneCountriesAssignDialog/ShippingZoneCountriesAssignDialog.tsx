@@ -1,39 +1,20 @@
-// @ts-strict-ignore
 import BackButton from "@dashboard/components/BackButton";
 import Checkbox from "@dashboard/components/Checkbox";
-import {
-  ConfirmButton,
-  ConfirmButtonTransitionState,
-} from "@dashboard/components/ConfirmButton";
+import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Form from "@dashboard/components/Form";
-import FormSpacer from "@dashboard/components/FormSpacer";
 import Hr from "@dashboard/components/Hr";
+import { DashboardModal } from "@dashboard/components/Modal";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import { CountryWithCodeFragment } from "@dashboard/graphql";
-import {
-  getCountrySelectionMap,
-  isRestWorldCountriesSelected,
-} from "@dashboard/shipping/handlers";
-import useScrollableDialogStyle from "@dashboard/styles/useScrollableDialogStyle";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TableBody,
-  TableCell,
-  TextField,
-  Typography,
-} from "@material-ui/core";
-import { filter } from "fuzzaldrin";
+import { fuzzySearch } from "@dashboard/misc";
+import { getCountrySelectionMap, isRestWorldCountriesSelected } from "@dashboard/shipping/handlers";
+import { TableBody, TableCell, TextField } from "@material-ui/core";
+import { Box, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import {
-  createCountryChangeHandler,
-  createRestOfTheWorldChangeHandler,
-} from "./handlers";
+import { createCountryChangeHandler, createRestOfTheWorldChangeHandler } from "./handlers";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
 
@@ -55,171 +36,130 @@ export interface ShippingZoneCountriesAssignDialogProps {
 const ShippingZoneCountriesAssignDialog: React.FC<
   ShippingZoneCountriesAssignDialogProps
 > = props => {
-  const {
-    confirmButtonState,
-    onClose,
-    countries,
-    restWorldCountries,
-    open,
-    initial,
-    onConfirm,
-  } = props;
-
+  const { confirmButtonState, onClose, countries, restWorldCountries, open, initial, onConfirm } =
+    props;
   const classes = useStyles(props);
-  const scrollableDialogClasses = useScrollableDialogStyle();
   const intl = useIntl();
-
   const initialForm: FormData = {
     countries: initial,
     query: "",
   };
 
   return (
-    <Dialog onClose={onClose} open={open} fullWidth maxWidth="sm">
-      <Form
-        initial={initialForm}
-        onSubmit={onConfirm}
-        className={scrollableDialogClasses.form}
-      >
-        {({ data, change }) => {
-          const countrySelectionMap = getCountrySelectionMap(
-            countries,
-            data.countries,
-          );
-          const isRestOfTheWorldSelected = isRestWorldCountriesSelected(
-            restWorldCountries,
-            countrySelectionMap,
-          );
-          const handleCountryChange = createCountryChangeHandler(
-            data.countries,
-            change,
-          );
-          const handleRestOfTheWorldChange = createRestOfTheWorldChangeHandler(
-            countrySelectionMap,
-            data.countries,
-            restWorldCountries,
-            change,
-          );
+    <DashboardModal onChange={onClose} open={open}>
+      <DashboardModal.Content size="sm">
+        <Form initial={initialForm} onSubmit={onConfirm}>
+          {({ data, change }) => {
+            const countrySelectionMap = getCountrySelectionMap(countries, data.countries);
+            const isRestOfTheWorldSelected = isRestWorldCountriesSelected(
+              restWorldCountries,
+              countrySelectionMap,
+            );
+            const handleCountryChange = createCountryChangeHandler(data.countries, change);
+            const handleRestOfTheWorldChange = createRestOfTheWorldChangeHandler(
+              countrySelectionMap,
+              data.countries,
+              restWorldCountries,
+              change,
+            );
+            const displayCountries = fuzzySearch(countries, data.query, ["country"]);
 
-          return (
-            <>
-              <DialogTitle disableTypography>
-                <FormattedMessage {...messages.assignCountriesTitle} />
-              </DialogTitle>
-              <DialogContent>
-                <Typography>
+            return (
+              <DashboardModal.Grid>
+                <DashboardModal.Title>
+                  <FormattedMessage {...messages.assignCountriesTitle} />
+                </DashboardModal.Title>
+
+                <Text>
                   <FormattedMessage {...messages.assignCountriesDescription} />
-                </Typography>
-                <FormSpacer />
+                </Text>
+
                 <TextField
                   name="query"
                   data-test-id="search-country-input"
                   value={data.query}
                   onChange={event => change(event)}
                   label={intl.formatMessage(messages.searchCountriesLabel)}
-                  placeholder={intl.formatMessage(
-                    messages.searchCountriesPlaceholder,
-                  )}
+                  placeholder={intl.formatMessage(messages.searchCountriesPlaceholder)}
                   fullWidth
                 />
-                <FormSpacer />
+
                 <Hr />
-                <FormSpacer />
+
                 {restWorldCountries.length > 0 && (
                   <>
-                    <Typography variant="subtitle1">
+                    <Text fontSize={3}>
                       <FormattedMessage {...messages.quickPickSubtitle} />
-                    </Typography>
-                    <FormSpacer />
+                    </Text>
+
                     <ResponsiveTable className={classes.table}>
                       <TableBody>
                         <TableRowLink
                           data-test-id="rest-of-the-world-row"
                           className={classes.clickableRow}
-                          onClick={() =>
-                            handleRestOfTheWorldChange(
-                              !isRestOfTheWorldSelected,
-                            )
-                          }
+                          onClick={() => handleRestOfTheWorldChange(!isRestOfTheWorldSelected)}
                         >
                           <TableCell className={classes.wideCell}>
-                            <FormattedMessage
-                              {...messages.restOfTheWorldCheckbox}
-                            />
-                            <Typography variant="caption">
-                              <FormattedMessage
-                                {...messages.restOfTheWorldCheckboxDescription}
-                              />
-                            </Typography>
+                            <FormattedMessage {...messages.restOfTheWorldCheckbox} />
+                            <Text size={2} fontWeight="light">
+                              <FormattedMessage {...messages.restOfTheWorldCheckboxDescription} />
+                            </Text>
                           </TableCell>
-                          <TableCell
-                            padding="checkbox"
-                            className={classes.checkboxCell}
-                          >
-                            <Checkbox
-                              name="restOfTheWorld"
-                              checked={isRestOfTheWorldSelected}
-                            />
+                          <TableCell padding="checkbox" className={classes.checkboxCell}>
+                            <Checkbox name="restOfTheWorld" checked={isRestOfTheWorldSelected} />
                           </TableCell>
                         </TableRowLink>
                       </TableBody>
                     </ResponsiveTable>
-                    <FormSpacer />
                   </>
                 )}
-                <Typography variant="subtitle1">
-                  <FormattedMessage {...messages.countriesSubtitle} />
-                </Typography>
-              </DialogContent>
-              <DialogContent className={scrollableDialogClasses.scrollArea}>
-                <ResponsiveTable className={classes.table}>
-                  <TableBody>
-                    {filter(countries, data.query, {
-                      key: "country",
-                    }).map(country => {
-                      const isChecked = countrySelectionMap[country.code];
 
-                      return (
-                        <TableRowLink
-                          data-test-id="country-row"
-                          className={classes.clickableRow}
-                          onClick={() =>
-                            handleCountryChange(country.code, !isChecked)
-                          }
-                          key={country.code}
-                        >
-                          <TableCell className={classes.wideCell}>
-                            {country.country}
-                          </TableCell>
-                          <TableCell
-                            padding="checkbox"
-                            className={classes.checkboxCell}
+                <Text fontSize={3}>
+                  <FormattedMessage {...messages.countriesSubtitle} />
+                </Text>
+
+                <Box overflowY="auto" __maxHeight="calc(100vh - 580px)">
+                  <ResponsiveTable className={classes.table}>
+                    <TableBody>
+                      {displayCountries.map(country => {
+                        const isChecked = countrySelectionMap[country.code];
+
+                        return (
+                          <TableRowLink
+                            data-test-id="country-row"
+                            className={classes.clickableRow}
+                            onClick={() => handleCountryChange(country.code, !isChecked)}
+                            key={country.code}
                           >
-                            <Checkbox checked={isChecked} />
-                          </TableCell>
-                        </TableRowLink>
-                      );
-                    })}
-                  </TableBody>
-                </ResponsiveTable>
-              </DialogContent>
-              <DialogActions>
-                <BackButton onClick={onClose} data-test-id="back-button" />
-                <ConfirmButton
-                  transitionState={confirmButtonState}
-                  type="submit"
-                  data-test-id="assign-and-save-button"
-                >
-                  <FormattedMessage {...messages.assignCountriesButton} />
-                </ConfirmButton>
-              </DialogActions>
-            </>
-          );
-        }}
-      </Form>
-    </Dialog>
+                            <TableCell className={classes.wideCell}>{country.country}</TableCell>
+                            <TableCell padding="checkbox" className={classes.checkboxCell}>
+                              <Checkbox checked={isChecked} />
+                            </TableCell>
+                          </TableRowLink>
+                        );
+                      })}
+                    </TableBody>
+                  </ResponsiveTable>
+                </Box>
+
+                <DashboardModal.Actions>
+                  <BackButton onClick={onClose} data-test-id="back-button" />
+                  <ConfirmButton
+                    transitionState={confirmButtonState}
+                    type="submit"
+                    data-test-id="assign-and-save-button"
+                  >
+                    <FormattedMessage {...messages.assignCountriesButton} />
+                  </ConfirmButton>
+                </DashboardModal.Actions>
+              </DashboardModal.Grid>
+            );
+          }}
+        </Form>
+      </DashboardModal.Content>
+    </DashboardModal>
   );
 };
-ShippingZoneCountriesAssignDialog.displayName =
-  "ShippingZoneCountriesAssignDialog";
+
+ShippingZoneCountriesAssignDialog.displayName = "ShippingZoneCountriesAssignDialog";
 export default ShippingZoneCountriesAssignDialog;

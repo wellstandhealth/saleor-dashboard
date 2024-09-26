@@ -46,8 +46,7 @@ const messages = defineMessages({
   },
   noShippingAddress: {
     id: "Wlc67M",
-    defaultMessage:
-      "Cannot choose a shipping method for an order without the shipping address",
+    defaultMessage: "Cannot choose a shipping method for an order without the shipping address",
     description: "error message",
   },
   notEditable: {
@@ -77,7 +76,7 @@ const messages = defineMessages({
 });
 
 function getOrderErrorMessage(
-  err: OrderErrorFragment,
+  err: OrderErrorFragment | undefined,
   intl: IntlShape,
 ): string | undefined {
   if (err) {

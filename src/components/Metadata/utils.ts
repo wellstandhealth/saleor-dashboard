@@ -19,15 +19,18 @@ export function parseEventData(event: ChangeEvent): EventData {
     fieldIndex = parseInt(event.target.name.split(nameSeparator)[1], 10);
     value = event.target.value;
   }
+
   if (event.target.name.includes(EventDataField.value)) {
     action = EventDataAction.update;
     field = EventDataField.value;
     fieldIndex = parseInt(event.target.name.split(nameSeparator)[1], 10);
     value = event.target.value;
   }
+
   if (event.target.name === EventDataAction.add) {
     action = EventDataAction.add;
   }
+
   if (event.target.name === EventDataAction.delete) {
     action = EventDataAction.delete;
     fieldIndex = event.target.value;
@@ -44,3 +47,16 @@ export function parseEventData(event: ChangeEvent): EventData {
 export function getDataKey(isPrivate: boolean) {
   return isPrivate ? "privateMetadata" : "metadata";
 }
+
+export const getMetadataTitle = (isPrivate: boolean) =>
+  isPrivate
+    ? {
+        id: "ETHnjq",
+        defaultMessage: "Private Metadata",
+        description: "header",
+      }
+    : {
+        id: "VcI+Zh",
+        defaultMessage: "Metadata",
+        description: "header",
+      };

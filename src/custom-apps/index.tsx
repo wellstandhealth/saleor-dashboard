@@ -1,10 +1,11 @@
 // @ts-strict-ignore
+import { Route } from "@dashboard/components/Router";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { sectionNames } from "@dashboard/intl";
 import { parse as parseQs } from "qs";
 import React from "react";
 import { useIntl } from "react-intl";
-import { Route, RouteComponentProps, Switch } from "react-router-dom";
+import { RouteComponentProps, Switch } from "react-router-dom";
 
 import {
   CustomAppDetailsUrlQueryParams,
@@ -16,6 +17,14 @@ import CustomAppDetailsView from "./views/CustomAppDetails";
 import CustomAppListView from "./views/CustomAppList";
 import CustomAppWebhookCreateView from "./views/CustomAppWebhookCreate";
 import CustomAppWebhookDetailsView from "./views/CustomAppWebhookDetails";
+
+interface MatchParams {
+  appId?: string;
+}
+
+interface MatchParamsWebhookDetails {
+  id?: string;
+}
 
 const CustomAppList: React.FC<RouteComponentProps> = () => {
   const qs = parseQs(location.search.substr(1));
@@ -29,11 +38,7 @@ interface CustomAppDetailsProps extends RouteComponentProps<{ id?: string }> {
   onTokenClose: () => void;
 }
 
-const CustomAppDetails: React.FC<CustomAppDetailsProps> = ({
-  match,
-  token,
-  onTokenClose,
-}) => {
+const CustomAppDetails: React.FC<CustomAppDetailsProps> = ({ match, token, onTokenClose }) => {
   const qs = parseQs(location.search.substr(1));
   const params: CustomAppDetailsUrlQueryParams = qs;
   const id = match.params.id;
@@ -51,10 +56,7 @@ const CustomAppDetails: React.FC<CustomAppDetailsProps> = ({
     />
   );
 };
-
-const CustomAppWebhookCreate: React.FC<RouteComponentProps<any>> = ({
-  match,
-}) => {
+const CustomAppWebhookCreate: React.FC<RouteComponentProps<MatchParams>> = ({ match }) => {
   const appId = match.params.appId;
 
   if (!appId) {
@@ -63,8 +65,7 @@ const CustomAppWebhookCreate: React.FC<RouteComponentProps<any>> = ({
 
   return <CustomAppWebhookCreateView appId={decodeURIComponent(appId)} />;
 };
-
-const CustomAppWebhookDetails: React.FC<RouteComponentProps<any>> = ({
+const CustomAppWebhookDetails: React.FC<RouteComponentProps<MatchParamsWebhookDetails>> = ({
   match,
 }) => {
   const id = match.params.id;
@@ -75,7 +76,6 @@ const CustomAppWebhookDetails: React.FC<RouteComponentProps<any>> = ({
 
   return <CustomAppWebhookDetailsView id={decodeURIComponent(id)} />;
 };
-
 const Component = () => {
   const intl = useIntl();
   const [token, setToken] = React.useState<string>(null);
@@ -84,11 +84,7 @@ const Component = () => {
     <>
       <WindowTitle title={intl.formatMessage(sectionNames.webhooksAndEvents)} />
       <Switch>
-        <Route
-          exact
-          path={CustomAppPaths.appListPath}
-          component={CustomAppList}
-        />
+        <Route exact path={CustomAppPaths.appListPath} component={CustomAppList} />
         <Route
           exact
           path={CustomAppPaths.appAddPath}
@@ -98,11 +94,7 @@ const Component = () => {
           exact
           path={CustomAppPaths.resolveAppPath(":id")}
           render={props => (
-            <CustomAppDetails
-              {...props}
-              token={token}
-              onTokenClose={() => setToken(null)}
-            />
+            <CustomAppDetails {...props} token={token} onTokenClose={() => setToken(null)} />
           )}
         />
         <Route

@@ -3,8 +3,7 @@ import { defineMessages } from "react-intl";
 export const messages = defineMessages({
   installAppDescription: {
     id: "ARfw53",
-    defaultMessage:
-      "Install apps created by Saleor team or install external apps.",
+    defaultMessage: "Install apps created by Saleor team or install external apps.",
     description: "description",
   },
   installedApps: {
@@ -23,13 +22,8 @@ export const messages = defineMessages({
     description: "section header",
   },
   comingSoonApps: {
-    id: "VTq2gn",
-    defaultMessage: "Coming Soon",
+    id: "hJDnLg",
+    defaultMessage: "Upcoming Apps",
     description: "section header",
-  },
-  nothingInstalledPlaceholder: {
-    defaultMessage: "Nothing installed yet.",
-    description: "placeholder",
-    id: "9g6Y7a",
   },
 });

@@ -10,10 +10,7 @@ import { Box, useTheme } from "@saleor/macaw-ui-next";
 import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import {
-  createGetCellContent,
-  voucherCodesStaticColumnsAdapter,
-} from "./datagrid";
+import { createGetCellContent, voucherCodesStaticColumnsAdapter } from "./datagrid";
 import { messages } from "./messages";
 import { VoucherCode } from "./types";
 
@@ -36,23 +33,17 @@ export const VoucherCodesDatagrid = ({
 }: VoucherCodesDatagridProps) => {
   const intl = useIntl();
   const datagrid = useDatagridChangeState();
-  const { themeValues } = useTheme();
-
-  const voucherCodesStaticColumns = useMemo(
-    () => voucherCodesStaticColumnsAdapter(intl),
-    [intl],
-  );
-
+  const { theme } = useTheme();
+  const voucherCodesStaticColumns = useMemo(() => voucherCodesStaticColumnsAdapter(intl), [intl]);
   const { handlers, visibleColumns } = useColumns({
     staticColumns: voucherCodesStaticColumns,
     selectedColumns: ["code", "usage", "status"],
-    onSave: () => {},
+    onSave: () => undefined,
   });
-
-  const getCellContent = useCallback(
-    createGetCellContent(codes, visibleColumns, intl, themeValues),
-    [codes, visibleColumns],
-  );
+  const getCellContent = useCallback(createGetCellContent(codes, visibleColumns, intl, theme), [
+    codes,
+    visibleColumns,
+  ]);
 
   return (
     <DatagridChangeStateContext.Provider value={datagrid}>
@@ -63,7 +54,7 @@ export const VoucherCodesDatagrid = ({
         hasRowHover={false}
         onColumnMoved={handlers.onMove}
         onColumnResize={handlers.onResize}
-        verticalBorder={col => col > 0}
+        verticalBorder={false}
         rows={codes?.length ?? 0}
         availableColumns={visibleColumns}
         emptyText={intl.formatMessage(messages.empty)}

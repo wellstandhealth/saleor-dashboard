@@ -3,7 +3,7 @@ import { AppPaths } from "@dashboard/apps/urls";
 import Link from "@dashboard/components/Link";
 import { TimelineEvent } from "@dashboard/components/Timeline";
 import { customerPath } from "@dashboard/customers/urls";
-import { GiftCardEventFragment, GiftCardEventsEnum } from "@dashboard/graphql";
+import { GiftCardEventsEnum, GiftCardEventsQuery } from "@dashboard/graphql";
 import { orderUrl } from "@dashboard/orders/urls";
 import { staffMemberDetailsUrl } from "@dashboard/staff/urls";
 import React from "react";
@@ -11,7 +11,9 @@ import { IntlShape, useIntl } from "react-intl";
 
 import { giftCardHistoryTimelineMessages as timelineMessages } from "./messages";
 
-const getUserOrApp = (event: GiftCardEventFragment): string | null => {
+type GiftCardEventType = GiftCardEventsQuery["giftCard"]["events"][0];
+
+const getUserOrApp = (event: GiftCardEventType): string | null => {
   if (event.user) {
     const { firstName, lastName, email } = event.user;
 
@@ -28,18 +30,18 @@ const getUserOrApp = (event: GiftCardEventFragment): string | null => {
 
   return null;
 };
-
-const getUserOrAppUrl = (event: GiftCardEventFragment): string => {
+const getUserOrAppUrl = (event: GiftCardEventType): string => {
   if (event.user) {
     return staffMemberDetailsUrl(event.user.id);
   }
+
   if (event.app) {
     return AppPaths.resolveAppPath(event.app.id);
   }
+
   return null;
 };
-
-const getEventMessage = (event: GiftCardEventFragment, intl: IntlShape) => {
+const getEventMessage = (event: GiftCardEventType, intl: IntlShape) => {
   const user = getUserOrApp(event);
   const userUrl = getUserOrAppUrl(event);
 
@@ -58,9 +60,7 @@ const getEventMessage = (event: GiftCardEventFragment, intl: IntlShape) => {
         : intl.formatMessage(timelineMessages.balanceResetAnonymous);
     case GiftCardEventsEnum.BOUGHT:
       return intl.formatMessage(timelineMessages.bought, {
-        orderNumber: (
-          <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>
-        ),
+        orderNumber: <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>,
       });
     case GiftCardEventsEnum.DEACTIVATED:
       return user
@@ -91,45 +91,31 @@ const getEventMessage = (event: GiftCardEventFragment, intl: IntlShape) => {
     case GiftCardEventsEnum.USED_IN_ORDER:
       return user
         ? intl.formatMessage(timelineMessages.usedInOrder, {
-            orderLink: (
-              <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>
-            ),
+            orderLink: <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>,
             buyer: content =>
               !!user && (
                 <Link
                   href={
-                    event.user
-                      ? customerPath(event.user.id)
-                      : AppPaths.resolveAppPath(event.app.id)
+                    event.user ? customerPath(event.user.id) : AppPaths.resolveAppPath(event.app.id)
                   }
                 >{`${content} ${user}`}</Link>
               ),
           })
         : intl.formatMessage(timelineMessages.usedInOrderAnonymous, {
-            orderLink: (
-              <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>
-            ),
+            orderLink: <Link href={orderUrl(event.orderId)}>#{event.orderNumber}</Link>,
           });
   }
 };
 
 export interface GiftCardTimelineEventProps {
   date: string;
-  event: GiftCardEventFragment;
+  event: GiftCardEventType;
 }
 
-const GiftCardTimelineEvent: React.FC<GiftCardTimelineEventProps> = ({
-  date,
-  event,
-}) => {
+const GiftCardTimelineEvent: React.FC<GiftCardTimelineEventProps> = ({ date, event }) => {
   const intl = useIntl();
-  return (
-    <TimelineEvent
-      date={date}
-      title={getEventMessage(event, intl)}
-      hasPlainDate
-    />
-  );
+
+  return <TimelineEvent date={date} title={getEventMessage(event, intl)} hasPlainDate={false} />;
 };
 
 export default GiftCardTimelineEvent;

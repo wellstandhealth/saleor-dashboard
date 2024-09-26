@@ -21,7 +21,6 @@ const initialData: GenerateMultipleVoucherCodeFormData = {
   quantity: "",
   prefix: "",
 };
-
 const MAX_VOUCHER_CODES = 50;
 
 export const VoucherCodesGenerateDialog = ({
@@ -30,18 +29,13 @@ export const VoucherCodesGenerateDialog = ({
   onSubmit,
 }: VoucherCodesGenerateDialogProps) => {
   const intl = useIntl();
-  const [data, setData] =
-    useState<GenerateMultipleVoucherCodeFormData>(initialData);
-
+  const [data, setData] = useState<GenerateMultipleVoucherCodeFormData>(initialData);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
 
-    if (
-      Number.isNaN(Number(value)) ||
-      Number(value) > MAX_VOUCHER_CODES ||
-      value.includes(".")
-    ) {
+    if (Number.isNaN(Number(value)) || Number(value) > MAX_VOUCHER_CODES || value.includes(".")) {
       e.preventDefault();
+
       return;
     }
 
@@ -50,12 +44,10 @@ export const VoucherCodesGenerateDialog = ({
       [e.target.name]: e.target.value,
     }));
   };
-
   const handleModalClose = () => {
     onClose();
     setData(initialData);
   };
-
   const handleSubmit = async () => {
     await onSubmit(data);
     onClose();
@@ -64,10 +56,8 @@ export const VoucherCodesGenerateDialog = ({
 
   return (
     <DashboardModal open={open} onChange={handleModalClose}>
-      <DashboardModal.Content>
-        <DashboardModal.Title>
-          {intl.formatMessage(messages.title)}
-        </DashboardModal.Title>
+      <DashboardModal.Content size="xs">
+        <DashboardModal.Title>{intl.formatMessage(messages.title)}</DashboardModal.Title>
         <Box display="grid" gap={3} __width={390}>
           <Input
             name="quantity"
@@ -79,6 +69,7 @@ export const VoucherCodesGenerateDialog = ({
             })}
             value={data.quantity}
             onChange={handleChange}
+            data-test-id="quantity-input"
           />
           <Input
             name="prefix"
@@ -90,13 +81,18 @@ export const VoucherCodesGenerateDialog = ({
                 [e.target.name]: e.target.value,
               }));
             }}
+            data-test-id="prefix-input"
           />
         </Box>
         <DashboardModal.Actions>
           <Button onClick={handleModalClose} variant="secondary">
             {intl.formatMessage(buttonMessages.back)}
           </Button>
-          <Button onClick={handleSubmit} disabled={Number(data.quantity) === 0}>
+          <Button
+            onClick={handleSubmit}
+            disabled={Number(data.quantity) === 0}
+            data-test-id="confirm-button"
+          >
             {intl.formatMessage(buttonMessages.confirm)}
           </Button>
         </DashboardModal.Actions>

@@ -118,7 +118,7 @@ export const orderDetailsQuery = gql`
 `;
 
 export const orderDetailsWithMetadataQuery = gql`
-  query OrderDetailsWithMetadata($id: ID!, $isStaffUser: Boolean!) {
+  query OrderDetailsWithMetadata($id: ID!, $hasManageProducts: Boolean!) {
     order(id: $id) {
       ...OrderDetailsWithMetadata
     }
@@ -226,6 +226,22 @@ export const orderRefundData = gql`
           orderLine {
             ...RefundOrderLine
           }
+        }
+      }
+    }
+  }
+`;
+
+export const orderTransactionsData = gql`
+  query OrderTransactionsData($orderId: ID!) {
+    order(id: $orderId) {
+      id
+      transactions {
+        ...TransactionItem
+      }
+      total {
+        gross {
+          ...Money
         }
       }
     }

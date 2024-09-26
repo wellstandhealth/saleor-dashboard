@@ -1,16 +1,13 @@
-import {
-  Box,
-  Button,
-  ChervonDownIcon,
-  Dropdown,
-  List,
-  Text,
-} from "@saleor/macaw-ui-next";
+import { Box, Button, ChervonDownIcon, Dropdown, List, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 
 interface ButtonWithDropdownProps {
   onClick: () => void;
-  options: Array<{ label: string; testId: string; onSelect: () => void }>;
+  options: Array<{
+    label: string;
+    testId: string;
+    onSelect: <T>(params?: T) => void;
+  }>;
   testId?: string;
   disabled?: boolean;
 }
@@ -31,12 +28,7 @@ export const ButtonWithDropdown: React.FC<ButtonWithDropdownProps> = ({
     </Dropdown.Trigger>
     <Dropdown.Content align="end">
       <Box>
-        <List
-          padding={2}
-          borderRadius={4}
-          boxShadow="overlay"
-          backgroundColor="surfaceNeutralPlain"
-        >
+        <List padding={2} borderRadius={4} boxShadow="defaultOverlay" backgroundColor="default1">
           {options.map((item, idx) => (
             <Dropdown.Item key={`dropdown-item-${idx}`}>
               <List.Item

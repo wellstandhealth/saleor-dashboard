@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { ApolloError } from "@apollo/client";
 import { findValueInEnum } from "@dashboard/misc";
 import { GraphQLError } from "graphql";
@@ -20,8 +19,9 @@ export type AuthError = (typeof AuthError)[keyof typeof AuthError];
 
 export function isJwtError(error: GraphQLError): boolean {
   let jwtError: boolean;
+
   try {
-    jwtError = !!findValueInEnum(error.extensions.exception.code, JWTError);
+    jwtError = !!findValueInEnum(error.extensions?.exception.code, JWTError);
   } catch (e) {
     jwtError = false;
   }
@@ -30,7 +30,7 @@ export function isJwtError(error: GraphQLError): boolean {
 }
 
 export function isTokenExpired(error: GraphQLError): boolean {
-  return error.extensions.exception.code === JWTError.expired;
+  return error.extensions?.exception.code === JWTError.expired;
 }
 
 export function getAuthErrorType(graphQLError: GraphQLError): UserContextError {
@@ -45,9 +45,5 @@ export function getAuthErrorType(graphQLError: GraphQLError): UserContextError {
 }
 
 export function parseAuthError(authError: ApolloError): UserContextError[] {
-  return (
-    authError?.graphQLErrors?.map(graphQLError =>
-      getAuthErrorType(graphQLError),
-    ) || []
-  );
+  return authError?.graphQLErrors?.map(graphQLError => getAuthErrorType(graphQLError)) || [];
 }

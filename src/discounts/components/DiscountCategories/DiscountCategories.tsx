@@ -1,25 +1,22 @@
 // @ts-strict-ignore
 import { categoryUrl } from "@dashboard/categories/urls";
 import { Button } from "@dashboard/components/Button";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import Checkbox from "@dashboard/components/Checkbox";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
-import Skeleton from "@dashboard/components/Skeleton";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
 import TableHead from "@dashboard/components/TableHead";
 import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import {
-  SaleDetailsFragment,
-  VoucherDetailsFragment,
-} from "@dashboard/graphql";
-import { mapEdgesToItems } from "@dashboard/utils/maps";
-import { Card, TableBody, TableCell, TableFooter } from "@material-ui/core";
+import { SaleDetailsFragment, VoucherDetailsFragment } from "@dashboard/graphql";
+import { getLoadableList, mapEdgesToItems } from "@dashboard/utils/maps";
+import { TableBody, TableCell, TableFooter } from "@material-ui/core";
 import { DeleteIcon, IconButton } from "@saleor/macaw-ui";
+import { Skeleton } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { maybe, renderCollection } from "../../../misc";
+import { renderCollection } from "../../../misc";
 import { ListActions, ListProps } from "../../../types";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
@@ -31,7 +28,6 @@ export interface DiscountCategoriesProps extends ListProps, ListActions {
 }
 
 const numberOfColumns = 4;
-
 const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
   const {
     discount,
@@ -45,19 +41,20 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
     isChecked,
   } = props;
   const classes = useStyles(props);
-
   const intl = useIntl();
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage(messages.discountCategoriesHeader)}
-        toolbar={
-          <Button onClick={onCategoryAssign}>
+    <DashboardCard data-test-id="assign-category-section">
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage(messages.discountCategoriesHeader)}
+        </DashboardCard.Title>
+        <DashboardCard.Toolbar>
+          <Button onClick={onCategoryAssign} data-test-id="assign-category-button">
             <FormattedMessage {...messages.discountCategoriesButton} />
           </Button>
-        }
-      />
+        </DashboardCard.Toolbar>
+      </DashboardCard.Header>
       <ResponsiveTable>
         <colgroup>
           <col />
@@ -75,14 +72,10 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
         >
           <>
             <TableCell className={classes.colName}>
-              <FormattedMessage
-                {...messages.discountCategoriesTableProductHeader}
-              />
+              <FormattedMessage {...messages.discountCategoriesTableProductHeader} />
             </TableCell>
             <TableCell className={classes.colProducts}>
-              <FormattedMessage
-                {...messages.discountCategoriesTableProductNumber}
-              />
+              <FormattedMessage {...messages.discountCategoriesTableProductNumber} />
             </TableCell>
             <TableCell />
           </>
@@ -92,9 +85,9 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
             <TablePaginationWithContext colSpan={numberOfColumns} />
           </TableRowLink>
         </TableFooter>
-        <TableBody>
+        <TableBody data-test-id="assigned-specific-products-table">
           {renderCollection(
-            mapEdgesToItems(discount?.categories),
+            getLoadableList(discount?.categories),
             category => {
               const isSelected = category ? isChecked(category.id) : false;
 
@@ -105,6 +98,7 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
                   href={category && categoryUrl(category.id)}
                   className={classes.tableRow}
                   selected={isSelected}
+                  data-test-id="assigned-specific-product"
                 >
                   <TableCell padding="checkbox">
                     <Checkbox
@@ -114,15 +108,8 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
                       onChange={() => toggle(category.id)}
                     />
                   </TableCell>
-                  <TableCell>
-                    {maybe<React.ReactNode>(() => category.name, <Skeleton />)}
-                  </TableCell>
-                  <TableCell className={classes.colProducts}>
-                    {maybe<React.ReactNode>(
-                      () => category.products.totalCount,
-                      <Skeleton />,
-                    )}
-                  </TableCell>
+                  <TableCell>{category ? category.name : <Skeleton />}</TableCell>
+                  <TableCell>{category ? category.products.totalCount : <Skeleton />}</TableCell>
                   <TableCell className={classes.colActions}>
                     <TableButtonWrapper>
                       <IconButton
@@ -150,8 +137,9 @@ const DiscountCategories: React.FC<DiscountCategoriesProps> = props => {
           )}
         </TableBody>
       </ResponsiveTable>
-    </Card>
+    </DashboardCard>
   );
 };
+
 DiscountCategories.displayName = "DiscountCategories";
 export default DiscountCategories;

@@ -2,12 +2,13 @@ import { PLACEHOLDER } from "@dashboard/components/Datagrid/const";
 import {
   readonlyTextCell,
   tagsCell,
+  textCell,
 } from "@dashboard/components/Datagrid/customCells/cells";
 import { AvailableColumn } from "@dashboard/components/Datagrid/types";
 import { DotStatus } from "@dashboard/components/StatusDot/StatusDot";
 import { getStatusColor } from "@dashboard/misc";
 import { GridCell, Item } from "@glideapps/glide-data-grid";
-import { ThemeTokensValues } from "@saleor/macaw-ui-next";
+import { DefaultTheme } from "@saleor/macaw-ui-next";
 import { IntlShape } from "react-intl";
 
 import { columnsMessages, messages } from "./messages";
@@ -36,7 +37,7 @@ export const createGetCellContent =
     voucherCodes: VoucherCode[],
     columns: AvailableColumn[],
     intl: IntlShape,
-    themeValues: ThemeTokensValues,
+    currentTheme: DefaultTheme,
   ) =>
   ([column, row]: Item): GridCell => {
     const columnId = columns[column]?.id;
@@ -48,22 +49,22 @@ export const createGetCellContent =
 
     switch (columnId) {
       case "code":
-        return readonlyTextCell(rowData?.code ?? "", false);
+        return textCell(rowData?.code ?? "", {
+          readonly: true,
+          allowOverlay: true,
+        });
       case "usage":
-        return readonlyTextCell(
-          rowData?.used?.toString() ?? PLACEHOLDER,
-          false,
-        );
+        return readonlyTextCell(rowData?.used?.toString() ?? PLACEHOLDER, false);
       case "status": {
         const status = getStatus(rowData?.isActive);
-        const statusColor = getStatusColor(status);
+        const color = getStatusColor({ status, currentTheme });
         const statusMessage = getStatusMessage(rowData?.isActive, intl);
 
         return tagsCell(
           [
             {
               tag: statusMessage,
-              color: getTagCellColor(statusColor, themeValues),
+              color: color.base,
             },
           ],
           [statusMessage],
@@ -82,6 +83,7 @@ function getStatus(isActive: boolean | undefined): DotStatus {
   if (isActive === undefined) {
     return "warning";
   }
+
   return isActive ? "success" : "error";
 }
 
@@ -90,20 +92,5 @@ function getStatusMessage(isActive: boolean | undefined, intl: IntlShape) {
     return intl.formatMessage(messages.draft);
   }
 
-  return isActive
-    ? intl.formatMessage(messages.active)
-    : intl.formatMessage(messages.inactive);
-}
-
-function getTagCellColor(
-  color: string,
-  currentTheme: ThemeTokensValues,
-): string {
-  if (color.startsWith("#")) {
-    return color;
-  }
-
-  return currentTheme.colors.background[
-    color as keyof ThemeTokensValues["colors"]["background"]
-  ];
+  return isActive ? intl.formatMessage(messages.active) : intl.formatMessage(messages.inactive);
 }

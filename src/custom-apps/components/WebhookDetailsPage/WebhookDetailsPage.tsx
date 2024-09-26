@@ -3,7 +3,7 @@ import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButto
 import Form from "@dashboard/components/Form";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import WebhookEvents from "@dashboard/custom-apps/components/WebhookEvents";
 import WebhookInfo from "@dashboard/custom-apps/components/WebhookInfo";
 import WebhookStatus from "@dashboard/custom-apps/components/WebhookStatus";
@@ -15,6 +15,7 @@ import { CustomAppUrls } from "@dashboard/custom-apps/urls";
 import { IntrospectionNode } from "@dashboard/custom-apps/utils";
 import {
   WebhookDetailsFragment,
+  WebhookErrorCode,
   WebhookErrorFragment,
   WebhookEventTypeAsyncEnum,
   WebhookEventTypeSyncEnum,
@@ -29,7 +30,8 @@ import { useIntl } from "react-intl";
 import PermissionAlert from "../PermissionAlert";
 import WebhookHeaders from "../WebhookHeaders";
 import WebhookSubscriptionQuery from "../WebhookSubscriptionQuery";
-import { getHeaderTitle } from "./messages";
+import { getHeaderTitle, messages } from "./messages";
+import { getWebhookFormInitialFormValues } from "./webhookForm";
 
 export interface WebhookFormData {
   syncEvents: WebhookEventTypeSyncEnum[];
@@ -66,32 +68,37 @@ const WebhookDetailsPage: React.FC<WebhookDetailsPageProps> = ({
   const navigate = useNavigator();
 
   let prettified: string;
+
   try {
     prettified = print(parse(webhook?.subscriptionQuery || ""));
   } catch {
     prettified = webhook?.subscriptionQuery || "";
   }
 
-  const initialForm: WebhookFormData = {
-    syncEvents: webhook?.syncEvents?.map(event => event.eventType) || [],
-    asyncEvents: webhook?.asyncEvents?.map(event => event.eventType) || [],
-    isActive: !!webhook?.isActive || true,
-    name: webhook?.name || "",
-    secretKey: webhook?.secretKey || "",
-    targetUrl: webhook?.targetUrl || "",
-    subscriptionQuery: prettified || "",
-    customHeaders: webhook?.customHeaders || "{}",
-  };
+  const initialForm = getWebhookFormInitialFormValues({ webhook, prettifiedQuery: prettified });
 
   const backUrl = CustomAppUrls.resolveAppUrl(appId);
-
   const [query, setQuery] = useState(prettified);
 
   useEffect(() => {
     setQuery(prettified);
   }, [prettified]);
 
+  const [localErrors, setLocalErrors] = React.useState<WebhookErrorFragment[]>([]);
   const handleSubmit = (data: WebhookFormData) => {
+    if (!webhook && query.length === 0) {
+      setLocalErrors([
+        {
+          __typename: "WebhookError",
+          code: WebhookErrorCode.REQUIRED,
+          field: "subscriptionQuery",
+          message: intl.formatMessage(messages.subscriptionQueryBlankError),
+        },
+      ]);
+
+      return;
+    }
+
     onSubmit({ ...data, ...{ subscriptionQuery: query } });
   };
 
@@ -118,17 +125,8 @@ const WebhookDetailsPage: React.FC<WebhookDetailsPageProps> = ({
             <TopNav href={backUrl} title={getHeaderTitle(intl, webhook)} />
             <DetailPageLayout.Content>
               <Box padding={6}>
-                <WebhookStatus
-                  data={data.isActive}
-                  disabled={disabled}
-                  onChange={change}
-                />
-                <WebhookInfo
-                  data={data}
-                  disabled={disabled}
-                  errors={errors}
-                  onChange={change}
-                />
+                <WebhookStatus data={data.isActive} disabled={disabled} onChange={change} />
+                <WebhookInfo data={data} disabled={disabled} errors={errors} onChange={change} />
               </Box>
               <FormSpacer />
               <Box>
@@ -143,6 +141,7 @@ const WebhookDetailsPage: React.FC<WebhookDetailsPageProps> = ({
                   query={query}
                   setQuery={setQuery}
                   data={data}
+                  errors={localErrors}
                 />
                 <FormSpacer />
                 <PermissionAlert query={query} />
@@ -150,17 +149,21 @@ const WebhookDetailsPage: React.FC<WebhookDetailsPageProps> = ({
                 <WebhookHeaders data={data} onChange={change} />
               </Box>
             </DetailPageLayout.Content>
-            <Savebar
-              disabled={disabled}
-              state={saveButtonBarState}
-              onCancel={() => navigate(backUrl)}
-              onSubmit={submit}
-            />
+            <Savebar>
+              <Savebar.Spacer />
+              <Savebar.CancelButton onClick={() => navigate(backUrl)} />
+              <Savebar.ConfirmButton
+                transitionState={saveButtonBarState}
+                onClick={submit}
+                disabled={disabled}
+              />
+            </Savebar>
           </DetailPageLayout>
         );
       }}
     </Form>
   );
 };
+
 WebhookDetailsPage.displayName = "WebhookDetailsPage";
 export default WebhookDetailsPage;

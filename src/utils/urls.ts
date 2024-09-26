@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { getAppDefaultUri, getAppMountUri } from "@dashboard/config";
 import { stringify } from "qs";
 
@@ -11,9 +10,7 @@ export function stringifyQs(
   });
 }
 
-export function getArrayQueryParam(
-  param: string | string[],
-): string[] | undefined {
+export function getArrayQueryParam(param: string | string[]): string[] | undefined {
   if (!param) {
     return undefined;
   }
@@ -25,7 +22,7 @@ export function getArrayQueryParam(
   return [param];
 }
 
-export const isExternalURL = url => /^https?:\/\//.test(url);
+export const isExternalURL = (url: string) => /^https?:\/\//.test(url);
 
 export const getAppMountUriForRedirect = () =>
   getAppMountUri() === getAppDefaultUri() ? "" : getAppMountUri();

@@ -22,7 +22,7 @@ export interface ObjectWithMetadata {
 
 function createMetadataUpdateHandler<TData extends MetadataFormData, TError>(
   initial: ObjectWithMetadata,
-  update: (data: TData) => SubmitPromise<TError[]>,
+  update: (data: TData) => SubmitPromise<TError[] | undefined>,
   updateMetadata: (
     variables: UpdateMetadataMutationVariables,
   ) => Promise<FetchResult<UpdateMetadataMutation>>,
@@ -30,25 +30,19 @@ function createMetadataUpdateHandler<TData extends MetadataFormData, TError>(
     variables: UpdatePrivateMetadataMutationVariables,
   ) => Promise<FetchResult<UpdatePrivateMetadataMutation>>,
 ) {
-  return async (
-    data: TData,
-  ): Promise<Array<MetadataErrorFragment | TError>> => {
+  return async (data: TData): Promise<Array<MetadataErrorFragment | TError>> => {
     const errors = await update(data);
-
-    const hasMetadataChanged = !areMetadataArraysEqual(
-      initial.metadata,
-      data.metadata,
-    );
+    const hasMetadataChanged = !areMetadataArraysEqual(initial.metadata, data.metadata);
     const hasPrivateMetadataChanged = !areMetadataArraysEqual(
       initial.privateMetadata,
       data.privateMetadata,
     );
 
-    if (errors.length > 0) {
+    if (errors && errors.length > 0) {
       return errors;
     }
 
-    if (errors.length === 0) {
+    if (errors?.length === 0) {
       if (data.metadata && hasMetadataChanged) {
         const initialKeys = initial.metadata.map(m => m.key);
         const modifiedKeys = data.metadata.map(m => m.key);
@@ -61,7 +55,6 @@ function createMetadataUpdateHandler<TData extends MetadataFormData, TError>(
             input: metadataInput,
             keysToDelete: keyDiff.removed,
           });
-
           const updateMetaErrors = [
             ...(updateMetaResult.data?.deleteMetadata?.errors || []),
             ...(updateMetaResult.data?.updateMetadata?.errors || []),
@@ -76,7 +69,6 @@ function createMetadataUpdateHandler<TData extends MetadataFormData, TError>(
       if (data.privateMetadata && hasPrivateMetadataChanged) {
         const initialKeys = initial.privateMetadata.map(m => m.key);
         const modifiedKeys = data.privateMetadata.map(m => m.key);
-
         const keyDiff = arrayDiff(initialKeys, modifiedKeys);
         const privateMetadataInput = filterMetadataArray(data.privateMetadata);
 
@@ -86,12 +78,9 @@ function createMetadataUpdateHandler<TData extends MetadataFormData, TError>(
             input: privateMetadataInput,
             keysToDelete: keyDiff.removed,
           });
-
           const updatePrivateMetaErrors = [
-            ...(updatePrivateMetaResult.data?.deletePrivateMetadata?.errors ||
-              []),
-            ...(updatePrivateMetaResult.data?.updatePrivateMetadata?.errors ||
-              []),
+            ...(updatePrivateMetaResult.data?.deletePrivateMetadata?.errors || []),
+            ...(updatePrivateMetaResult.data?.updatePrivateMetadata?.errors || []),
           ];
 
           if (updatePrivateMetaErrors.length > 0) {

@@ -18,6 +18,8 @@ import TranslationsCategoriesPage from "../components/TranslationsCategoriesPage
 import { TranslationField, TranslationInputFieldName } from "../types";
 import { getParsedTranslationInputData } from "../utils";
 
+type HandleSubmitData = string | OutputData;
+
 export interface TranslationsCategoriesQueryParams {
   activeField: string;
 }
@@ -36,25 +38,21 @@ const TranslationsCategories: React.FC<TranslationsCategoriesProps> = ({
   const notify = useNotifier();
   const shop = useShop();
   const intl = useIntl();
-
   const categoryTranslations = useCategoryTranslationDetailsQuery({
     variables: { id, language: languageCode },
   });
-
-  const [updateTranslations, updateTranslationsOpts] =
-    useUpdateCategoryTranslationsMutation({
-      onCompleted: data => {
-        if (data.categoryTranslate.errors.length === 0) {
-          categoryTranslations.refetch();
-          notify({
-            status: "success",
-            text: intl.formatMessage(commonMessages.savedChanges),
-          });
-          navigate("?", { replace: true });
-        }
-      },
-    });
-
+  const [updateTranslations, updateTranslationsOpts] = useUpdateCategoryTranslationsMutation({
+    onCompleted: data => {
+      if (data.categoryTranslate.errors.length === 0) {
+        categoryTranslations.refetch();
+        notify({
+          status: "success",
+          text: intl.formatMessage(commonMessages.savedChanges),
+        });
+        navigate("?", { replace: true });
+      }
+    },
+  });
   const onEdit = (field: string) =>
     navigate(
       "?" +
@@ -63,14 +61,12 @@ const TranslationsCategories: React.FC<TranslationsCategoriesProps> = ({
         }),
       { replace: true },
     );
-
   const onDiscard = () => {
     navigate("?", { replace: true });
   };
-
   const handleSubmit = (
     { name: fieldName }: TranslationField<TranslationInputFieldName>,
-    data: string | OutputData,
+    data: HandleSubmitData,
   ) =>
     extractMutationErrors(
       updateTranslations({
@@ -84,7 +80,6 @@ const TranslationsCategories: React.FC<TranslationsCategoriesProps> = ({
         },
       }),
     );
-
   const translation = categoryTranslations?.data?.translation;
 
   return (
@@ -98,13 +93,10 @@ const TranslationsCategories: React.FC<TranslationsCategoriesProps> = ({
       onEdit={onEdit}
       onDiscard={onDiscard}
       onSubmit={handleSubmit}
-      data={
-        translation?.__typename === "CategoryTranslatableContent"
-          ? translation
-          : null
-      }
+      data={translation?.__typename === "CategoryTranslatableContent" ? translation : null}
     />
   );
 };
+
 TranslationsCategories.displayName = "TranslationsCategories";
 export default TranslationsCategories;

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { useUserPermissions } from "@dashboard/auth/hooks/useUserPermissions";
 import {
   AppExtensionMountEnum,
@@ -58,42 +57,34 @@ const filterAndMapToTarget = (
   extensions: RelayToFlat<NonNullable<ExtensionListQuery["appExtensions"]>>,
   openApp: (appData: AppData) => void,
 ): ExtensionWithParams[] =>
-  extensions.map(
-    ({ id, accessToken, permissions, url, label, mount, target, app }) => ({
-      id,
-      app,
-      accessToken: accessToken || "",
-      permissions: permissions.map(({ code }) => code),
-      url,
-      label,
-      mount,
-      open: (params: AppDetailsUrlMountQueryParams) =>
-        openApp({
-          id: app.id,
-          appToken: accessToken || "",
-          src: url,
-          label,
-          target,
-          params,
-        }),
-    }),
-  );
-
-const mapToMenuItem = ({ label, id, open }: Extension) => ({
+  extensions.map(({ id, accessToken, permissions, url, label, mount, target, app }) => ({
+    id,
+    app,
+    accessToken: accessToken || "",
+    permissions: permissions.map(({ code }) => code),
+    url,
+    label,
+    mount,
+    open: (params: AppDetailsUrlMountQueryParams) =>
+      openApp({
+        id: app.id,
+        appToken: accessToken || "",
+        src: url,
+        label,
+        target,
+        params,
+      }),
+  }));
+const mapToMenuItem = ({ label, id, open }: ExtensionWithParams) => ({
   label,
   testId: `extension-${id}`,
   onSelect: open,
 });
 
-export const mapToMenuItems = (extensions: ExtensionWithParams[]) =>
-  extensions.map(mapToMenuItem);
+export const mapToMenuItems = (extensions: ExtensionWithParams[]) => extensions.map(mapToMenuItem);
 
-export const mapToMenuItemsForOrderListActions = (
-  extensions: ExtensionWithParams[],
-) =>
-  extensions.map(extension =>
-    mapToMenuItem({ ...extension, open: () => extension.open({}) }),
-  );
+export const mapToMenuItemsForOrderListActions = (extensions: ExtensionWithParams[]) =>
+  extensions.map(extension => mapToMenuItem({ ...extension, open: () => extension.open({}) }));
 
 export const mapToMenuItemsForProductOverviewActions = (
   extensions: ExtensionWithParams[],
@@ -146,10 +137,7 @@ export const useExtensions = <T extends AppExtensionMountEnum>(
 ): Record<T, Extension[]> => {
   const { openApp } = useExternalApp();
   const permissions = useUserPermissions();
-  const extensionsPermissions = permissions?.find(
-    perm => perm.code === PermissionEnum.MANAGE_APPS,
-  );
-
+  const extensionsPermissions = permissions?.find(perm => perm.code === PermissionEnum.MANAGE_APPS);
   const { data } = useExtensionListQuery({
     fetchPolicy: "cache-first",
     variables: {
@@ -159,24 +147,19 @@ export const useExtensions = <T extends AppExtensionMountEnum>(
     },
     skip: !extensionsPermissions,
   });
-
   const extensions = filterAndMapToTarget(
     mapEdgesToItems(data?.appExtensions ?? undefined) || [],
     openApp,
   );
-
   const extensionsMap = mountList.reduce(
     (extensionsMap, mount) => ({ ...extensionsMap, [mount]: [] }),
-    {} as Record<T, Extension[]>,
+    {} as Record<AppExtensionMountEnum, Extension[]>,
   );
 
   return extensions.reduce(
     (prevExtensionsMap, extension) => ({
       ...prevExtensionsMap,
-      [extension.mount]: [
-        ...(prevExtensionsMap[extension.mount] || []),
-        extension,
-      ],
+      [extension.mount]: [...(prevExtensionsMap[extension.mount] || []), extension],
     }),
     extensionsMap,
   );

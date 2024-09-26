@@ -55,26 +55,16 @@ export const ColumnPicker = ({
           variant="tertiary"
           icon={<TableEditIcon />}
           pointerEvents={pickerOpen ? "none" : undefined}
-          __backgroundColor={
-            pickerOpen
-              ? vars.colors.background.interactiveNeutralSecondaryPressing
-              : undefined
-          }
-          __borderColor={
-            pickerOpen ? vars.colors.border.neutralSubdued : undefined
-          }
+          __backgroundColor={pickerOpen ? vars.colors.background.default1Pressed : undefined}
+          __borderColor={pickerOpen ? vars.colors.border.default2 : undefined}
         />
       </Popover.Trigger>
       <Popover.Content
-        className={sprinkles({ margin: 1.5 })}
+        className={sprinkles({ margin: 1.5, zIndex: "1" })}
         align={align}
         side={side}
       >
-        <Box
-          display="grid"
-          gridTemplateColumns={expanded ? 2 : 1}
-          overflow="hidden"
-        >
+        <Box display="grid" gridTemplateColumns={expanded ? 2 : 1} overflow="hidden">
           {expanded && columnCategories && (
             <ColumnPickerCategories
               columnCategories={columnCategories}
@@ -87,12 +77,12 @@ export const ColumnPicker = ({
             __width="320px"
             __maxHeight="50vh"
             __minHeight={expanded ? "502px" : undefined}
-            backgroundColor="plain"
+            backgroundColor="default1"
             padding={4}
             overflow="scroll"
           >
             <Box marginBottom={3}>
-              <Text variant="caption" size="small" color="textNeutralSubdued">
+              <Text size={1} color="default2">
                 <FormattedMessage {...messages.column} />
               </Text>
             </Box>

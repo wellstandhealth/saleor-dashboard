@@ -49,14 +49,13 @@ export const productTypePath = (id: string) => urlJoin(productTypeSection, id);
 export type ProductTypeUrlDialog =
   | "assign-attribute"
   | "unassign-attribute"
-  | "unassign-attributes"
+  | "unassign-product-attributes"
+  | "unassign-variant-attributes"
   | "remove";
 export type ProductTypeUrlQueryParams = BulkAction &
   Dialog<ProductTypeUrlDialog> &
   SingleAction & {
     type?: string;
   };
-export const productTypeUrl = (
-  id: string,
-  params?: ProductTypeUrlQueryParams,
-) => productTypePath(encodeURIComponent(id)) + "?" + stringifyQs(params);
+export const productTypeUrl = (id: string, params?: ProductTypeUrlQueryParams) =>
+  productTypePath(encodeURIComponent(id)) + "?" + stringifyQs(params);

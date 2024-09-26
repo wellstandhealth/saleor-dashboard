@@ -1,15 +1,13 @@
-// @ts-strict-ignore
 import { Button } from "@dashboard/components/Button";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import Hr from "@dashboard/components/Hr";
 import ImageUpload from "@dashboard/components/ImageUpload";
 import MediaTile from "@dashboard/components/MediaTile";
-import Skeleton from "@dashboard/components/Skeleton";
 import { CategoryDetailsFragment } from "@dashboard/graphql";
 import { commonMessages } from "@dashboard/intl";
-import { Card, CardContent, TextField } from "@material-ui/core";
+import { TextField } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
-import { vars } from "@saleor/macaw-ui-next";
+import { Skeleton, vars } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -28,7 +26,7 @@ const useStyles = makeStyles(
     },
     imageContainer: {
       background: "#ffffff",
-      border: `1px solid ${vars.colors.border.neutralPlain}`,
+      border: `1px solid ${vars.colors.border.default1}`,
       borderRadius: theme.spacing(),
       height: 148,
       justifySelf: "start",
@@ -43,65 +41,64 @@ const useStyles = makeStyles(
 
 export interface CategoryBackgroundProps {
   data: CategoryUpdateData;
-  image: CategoryDetailsFragment["backgroundImage"];
+  image: CategoryDetailsFragment["backgroundImage"] | undefined | null;
   onChange: (event: React.ChangeEvent<any>) => void;
   onImageDelete: () => void;
-  onImageUpload: (file: File) => void;
+  onImageUpload: (file: File | null) => void;
 }
 
 const CategoryBackground: React.FC<CategoryBackgroundProps> = props => {
   const classes = useStyles(props);
   const intl = useIntl();
-  const anchor = React.useRef<HTMLInputElement>();
-
+  const anchor = React.useRef<HTMLInputElement>(null);
   const { data, onImageUpload, image, onChange, onImageDelete } = props;
-
-  const handleImageUploadButtonClick = () => anchor.current.click();
+  const handleImageUploadButtonClick = () => anchor.current?.click();
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage({
-          id: "DP6b8U",
-          defaultMessage: "Background Image (optional)",
-          description: "section header",
-        })}
-        toolbar={
-          <>
-            <Button variant="tertiary" onClick={handleImageUploadButtonClick}>
-              <FormattedMessage {...commonMessages.uploadImage} />
-            </Button>
-            <input
-              className={classes.fileField}
-              id="fileUpload"
-              onChange={event => onImageUpload(event.target.files[0])}
-              type="file"
-              ref={anchor}
-              accept="image/*"
-            />
-          </>
-        }
-      />
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "DP6b8U",
+            defaultMessage: "Background Image (optional)",
+            description: "section header",
+          })}
+        </DashboardCard.Title>
+        <DashboardCard.Toolbar>
+          <Button variant="tertiary" onClick={handleImageUploadButtonClick}>
+            <FormattedMessage {...commonMessages.uploadImage} />
+          </Button>
+          <input
+            className={classes.fileField}
+            id="fileUpload"
+            onChange={({ target: { files } }) => onImageUpload(files && files[0])}
+            type="file"
+            ref={anchor}
+            accept="image/*"
+          />
+        </DashboardCard.Toolbar>
+      </DashboardCard.Header>
+
       {image === undefined ? (
-        <CardContent>
+        <DashboardCard.Content>
           <div>
             <div className={classes.imageContainer}>
               <Skeleton />
             </div>
           </div>
-        </CardContent>
+        </DashboardCard.Content>
       ) : image === null ? (
         <ImageUpload onImageUpload={files => onImageUpload(files[0])} />
       ) : (
-        <CardContent>
+        <DashboardCard.Content>
           <MediaTile media={image} onDelete={onImageDelete} />
-        </CardContent>
+        </DashboardCard.Content>
       )}
 
       {image && (
         <>
           <Hr />
-          <CardContent>
+          <DashboardCard.Content>
             <TextField
               name="backgroundImageAlt"
               label={intl.formatMessage(commonMessages.description)}
@@ -115,11 +112,12 @@ const CategoryBackground: React.FC<CategoryBackgroundProps> = props => {
               fullWidth
               multiline
             />
-          </CardContent>
+          </DashboardCard.Content>
         </>
       )}
-    </Card>
+    </DashboardCard>
   );
 };
+
 CategoryBackground.displayName = "CategoryBackground";
 export default CategoryBackground;

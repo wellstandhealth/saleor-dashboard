@@ -9,30 +9,24 @@ interface PermissionsExceededProps {
   userPermissions: UserPermissionFragment[];
 }
 
-export const PermissionsExceeded = ({
-  userPermissions,
-}: PermissionsExceededProps) => {
+export const PermissionsExceeded = ({ userPermissions }: PermissionsExceededProps) => {
   const intl = useIntl();
 
   return (
     <>
-      <Text as="p" variant="body">
-        {intl.formatMessage(messages.exeededPermission)}
-      </Text>
+      <Text as="p">{intl.formatMessage(messages.exeededPermission)}</Text>
 
       <Box
         width="100%"
         borderBottomStyle="solid"
         borderBottomWidth={1}
-        borderColor="neutralPlain"
+        borderColor="default1"
         height={1}
         marginTop={6}
         marginBottom={6}
       />
 
-      <Text variant="body">
-        {intl.formatMessage(messages.availablePermissions)}
-      </Text>
+      <Text>{intl.formatMessage(messages.availablePermissions)}</Text>
 
       <List>
         {userPermissions.map(perm => (
@@ -42,10 +36,10 @@ export const PermissionsExceeded = ({
             marginLeft={4}
             cursor="text"
             backgroundColor={{
-              hover: "interactiveNeutralHighlightDefault",
+              hover: "default1Hovered",
             }}
           >
-            <Text variant="caption" size="large">{`- ${perm.name}`}</Text>
+            <Text size={3}>{`- ${perm.name}`}</Text>
           </List.Item>
         ))}
       </List>

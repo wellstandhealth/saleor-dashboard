@@ -2,6 +2,7 @@ import { hasSavedVoucherCodesToDelete } from "./utils";
 
 describe("hasSavedVoucherCodesToDelete", () => {
   it("should return true if there are saved voucher codes to delete", () => {
+    // Arrange
     const voucherCodesIdsToDelete = ["voucherCode1", "voucherCode2"];
     const voucherCodes = [
       {
@@ -18,12 +19,14 @@ describe("hasSavedVoucherCodesToDelete", () => {
       },
     ];
 
-    expect(
-      hasSavedVoucherCodesToDelete(voucherCodesIdsToDelete, voucherCodes),
-    ).toBe(true);
-  });
+    // Act
+    const result = hasSavedVoucherCodesToDelete(voucherCodesIdsToDelete, voucherCodes);
 
+    // Assert
+    expect(result).toBe(true);
+  });
   it("should return false if there are no saved voucher codes to delete", () => {
+    // Arrange
     const voucherCodesIdsToDelete = ["voucherCode1", "voucherCode2"];
     const voucherCodes = [
       {
@@ -36,8 +39,10 @@ describe("hasSavedVoucherCodesToDelete", () => {
       },
     ];
 
-    expect(
-      hasSavedVoucherCodesToDelete(voucherCodesIdsToDelete, voucherCodes),
-    ).toBe(false);
+    // Act
+    const result = hasSavedVoucherCodesToDelete(voucherCodesIdsToDelete, voucherCodes);
+
+    // Assert
+    expect(result).toBe(false);
   });
 });

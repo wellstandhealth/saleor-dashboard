@@ -6,11 +6,7 @@ import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
 import { useShopLimitsQuery } from "@dashboard/components/Shop/queries";
-import {
-  useOrderDraftBulkCancelMutation,
-  useOrderDraftCreateMutation,
-  useOrderDraftListQuery,
-} from "@dashboard/graphql";
+import { useOrderDraftCreateMutation, useOrderDraftListQuery } from "@dashboard/graphql";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
@@ -28,7 +24,6 @@ import createFilterHandlers from "@dashboard/utils/handlers/filterHandlers";
 import createSortHandler from "@dashboard/utils/handlers/sortHandler";
 import { mapEdgesToItems, mapNodeToChoice } from "@dashboard/utils/maps";
 import { getSortParams } from "@dashboard/utils/sort";
-import { DialogContentText } from "@material-ui/core";
 import isEqual from "lodash/isEqual";
 import React, { useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -40,13 +35,9 @@ import {
   OrderDraftListUrlQueryParams,
   orderUrl,
 } from "../../urls";
-import {
-  getFilterOpts,
-  getFilterQueryParam,
-  getFilterVariables,
-  storageUtils,
-} from "./filters";
+import { getFilterOpts, getFilterQueryParam, getFilterVariables, storageUtils } from "./filters";
 import { getSortQueryVariables } from "./sort";
+import { useBulkDeletion } from "./useBulkDeletion";
 
 interface OrderDraftListProps {
   params: OrderDraftListUrlQueryParams;
@@ -56,10 +47,7 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
   const navigate = useNavigator();
   const notify = useNotifier();
   const intl = useIntl();
-
-  const { updateListSettings, settings } = useListSettings(
-    ListViews.DRAFT_LIST,
-  );
+  const { updateListSettings, settings } = useListSettings(ListViews.DRAFT_LIST);
 
   usePaginationReset(orderDraftListUrl, params, settings.rowNumber);
 
@@ -69,25 +57,11 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
     setClearDatagridRowSelectionCallback,
     setSelectedRowIds,
   } = useRowSelection(params);
-
-  const [orderDraftBulkDelete, orderDraftBulkDeleteOpts] =
-    useOrderDraftBulkCancelMutation({
-      onCompleted: data => {
-        if (data.draftOrderBulkDelete.errors.length === 0) {
-          notify({
-            status: "success",
-            text: intl.formatMessage({
-              id: "ra2O4j",
-              defaultMessage: "Deleted draft orders",
-            }),
-          });
-          refetch();
-          clearRowSelection();
-          closeModal();
-        }
-      },
-    });
-
+  const { onOrderDraftBulkDelete, orderDraftBulkDeleteOpts } = useBulkDeletion(() => {
+    refetch();
+    clearRowSelection();
+    closeModal();
+  });
   const [createOrder] = useOrderDraftCreateMutation({
     onCompleted: data => {
       notify({
@@ -100,32 +74,26 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
       navigate(orderUrl(data.draftOrderCreate.order.id));
     },
   });
-
   const { channel } = useAppChannel(false);
   const user = useUser();
   const channels = user?.user?.accessibleChannels ?? [];
-
   const limitOpts = useShopLimitsQuery({
     variables: {
       orders: true,
     },
   });
-
-  const [changeFilters, resetFilters, handleSearchChange] =
-    createFilterHandlers({
-      cleanupFn: clearRowSelection,
-      createUrl: orderDraftListUrl,
-      getFilterQueryParam,
-      navigate,
-      params,
-      keepActiveTab: true,
-    });
-
+  const [changeFilters, resetFilters, handleSearchChange] = createFilterHandlers({
+    cleanupFn: clearRowSelection,
+    createUrl: orderDraftListUrl,
+    getFilterQueryParam,
+    navigate,
+    params,
+    keepActiveTab: true,
+  });
   const [openModal, closeModal] = createDialogActionHandlers<
     OrderDraftListUrlDialog,
     OrderDraftListUrlQueryParams
   >(navigate, orderDraftListUrl, params);
-
   const {
     selectedPreset,
     presets,
@@ -142,9 +110,7 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
     getUrl: orderDraftListUrl,
     storageUtils,
   });
-
   const paginationState = createPaginationState(settings.rowNumber, params);
-
   const queryVariables = React.useMemo(
     () => ({
       ...paginationState,
@@ -153,30 +119,17 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
     }),
     [paginationState, params],
   );
-  const { data, loading, refetch } = useOrderDraftListQuery({
+  const { data, refetch } = useOrderDraftListQuery({
     displayLoader: true,
     variables: queryVariables,
   });
-
   const orderDrafts = mapEdgesToItems(data?.draftOrders);
-
   const paginationValues = usePaginator({
     pageInfo: maybe(() => data.draftOrders.pageInfo),
     paginationState,
     queryString: params,
   });
-
   const handleSort = createSortHandler(navigate, orderDraftListUrl, params);
-
-  const onOrderDraftBulkDelete = useCallback(async () => {
-    await orderDraftBulkDelete({
-      variables: {
-        ids: selectedRowIds,
-      },
-    });
-    clearRowSelection();
-  }, []);
-
   const handleSetSelectedOrderDraftIds = useCallback(
     (rows: number[], clearSelection: () => void) => {
       if (!orderDrafts) {
@@ -192,12 +145,7 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
 
       setClearDatagridRowSelectionCallback(clearSelection);
     },
-    [
-      orderDrafts,
-      selectedRowIds,
-      setClearDatagridRowSelectionCallback,
-      setSelectedRowIds,
-    ],
+    [orderDrafts, selectedRowIds, setClearDatagridRowSelectionCallback, setSelectedRowIds],
   );
 
   return (
@@ -218,7 +166,7 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
         onFilterPresetUpdate={onPresetUpdate}
         onFilterPresetPresetSave={() => openModal("save-search")}
         filterPresets={presets.map(tab => tab.name)}
-        disabled={loading}
+        disabled={!data}
         settings={settings}
         orders={orderDrafts}
         onAdd={() => openModal("create-order")}
@@ -241,7 +189,7 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
       <ActionDialog
         confirmButtonState={orderDraftBulkDeleteOpts.status}
         onClose={closeModal}
-        onConfirm={onOrderDraftBulkDelete}
+        onConfirm={() => onOrderDraftBulkDelete(selectedRowIds)}
         open={params.action === "remove"}
         title={intl.formatMessage({
           id: "qbmeUI",
@@ -250,19 +198,15 @@ export const OrderDraftList: React.FC<OrderDraftListProps> = ({ params }) => {
         })}
         variant="delete"
       >
-        <DialogContentText>
-          <FormattedMessage
-            id="Q6VRrE"
-            defaultMessage="{counter,plural,one{Are you sure you want to delete this order draft?} other{Are you sure you want to delete {displayQuantity} order drafts?}}"
-            description="dialog content"
-            values={{
-              counter: maybe(() => selectedRowIds.length),
-              displayQuantity: (
-                <strong>{maybe(() => selectedRowIds.length)}</strong>
-              ),
-            }}
-          />
-        </DialogContentText>
+        <FormattedMessage
+          id="Q6VRrE"
+          defaultMessage="{counter,plural,one{Are you sure you want to delete this order draft?} other{Are you sure you want to delete {displayQuantity} order drafts?}}"
+          description="dialog content"
+          values={{
+            counter: maybe(() => selectedRowIds.length),
+            displayQuantity: <strong>{maybe(() => selectedRowIds.length)}</strong>,
+          }}
+        />
       </ActionDialog>
       <SaveFilterTabDialog
         open={params.action === "save-search"}

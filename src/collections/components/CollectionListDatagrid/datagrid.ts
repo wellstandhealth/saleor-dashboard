@@ -7,16 +7,13 @@ import {
   getChannelAvailabilityLabel,
   getDropdownColor,
 } from "@dashboard/components/ChannelsAvailabilityDropdown/utils";
-import {
-  readonlyTextCell,
-  tagsCell,
-} from "@dashboard/components/Datagrid/customCells/cells";
+import { readonlyTextCell, tagsCell } from "@dashboard/components/Datagrid/customCells/cells";
 import { AvailableColumn } from "@dashboard/components/Datagrid/types";
 import { getStatusColor } from "@dashboard/misc";
 import { Sort } from "@dashboard/types";
 import { getColumnSortDirectionIcon } from "@dashboard/utils/columns/getColumnSortDirectionIcon";
 import { GridCell, Item } from "@glideapps/glide-data-grid";
-import { DefaultTheme, ThemeTokensValues } from "@saleor/macaw-ui-next";
+import { DefaultTheme } from "@saleor/macaw-ui-next";
 import { IntlShape } from "react-intl";
 
 import { columnsMessages } from "./messages";
@@ -52,14 +49,12 @@ export const createGetCellContent =
     columns,
     intl,
     selectedChannelId,
-    theme,
     currentTheme,
   }: {
     collections: Collections;
     columns: AvailableColumn[];
     intl: IntlShape;
     selectedChannelId: string;
-    theme: ThemeTokensValues;
     currentTheme: DefaultTheme;
   }) =>
   ([column, row]: Item): GridCell => {
@@ -78,18 +73,11 @@ export const createGetCellContent =
       case "name":
         return readonlyTextCell(rowData.name);
       case "productCount":
-        return readonlyTextCell(
-          rowData?.products?.totalCount?.toString() ?? "",
-        );
+        return readonlyTextCell(rowData?.products?.totalCount?.toString() ?? "");
       case "availability": {
-        const { label, color } = !!channel
-          ? getAvailablilityLabelWhenSelectedChannel(
-              channel,
-              intl,
-              currentTheme,
-              theme,
-            )
-          : getAvailablilityLabel(rowData, intl, currentTheme, theme);
+        const { label, color } = channel
+          ? getAvailabilityLabelWhenSelectedChannel(channel, intl, currentTheme)
+          : getAvailabilityLabel(rowData, intl, currentTheme);
 
         return tagsCell(
           [
@@ -100,6 +88,7 @@ export const createGetCellContent =
           ],
           [label],
           {
+            cursor: "pointer",
             readonly: true,
             allowOverlay: false,
           },
@@ -110,55 +99,39 @@ export const createGetCellContent =
     }
   };
 
-export function getAvailablilityLabelWhenSelectedChannel(
+export function getAvailabilityLabelWhenSelectedChannel(
   channel: CollectionChannels,
   intl: IntlShape,
   currentTheme: DefaultTheme,
-  theme: ThemeTokensValues,
 ) {
-  const color = getStatusColor(
-    getChannelAvailabilityColor(channel),
+  const color = getStatusColor({
+    status: getChannelAvailabilityColor(channel),
     currentTheme,
-  );
+  });
 
   return {
     label: intl.formatMessage(getChannelAvailabilityLabel(channel)),
-    color: getTagCellColor(color, theme),
+    color: color.base,
   };
 }
 
-export function getAvailablilityLabel(
+export function getAvailabilityLabel(
   rowData: Collection,
   intl: IntlShape,
   currentTheme: DefaultTheme,
-  theme: ThemeTokensValues,
 ) {
-  const availablilityLabel = rowData?.channelListings?.length
+  const availabilityLabel = rowData?.channelListings?.length
     ? intl.formatMessage(messages.dropdownLabel, {
         channelCount: rowData?.channelListings?.length,
       })
     : intl.formatMessage(messages.noChannels);
-
-  const availablilityLabelColor = getStatusColor(
-    getDropdownColor(rowData?.channelListings || []),
+  const color = getStatusColor({
+    status: getDropdownColor(rowData?.channelListings || []),
     currentTheme,
-  );
+  });
 
   return {
-    label: availablilityLabel,
-    color: getTagCellColor(availablilityLabelColor, theme),
+    label: availabilityLabel,
+    color: color.base,
   };
-}
-
-function getTagCellColor(
-  color: string,
-  currentTheme: ThemeTokensValues,
-): string {
-  if (color.startsWith("#")) {
-    return color;
-  }
-
-  return currentTheme.colors.background[
-    color as keyof ThemeTokensValues["colors"]["background"]
-  ];
 }
