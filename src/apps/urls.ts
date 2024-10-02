@@ -125,6 +125,7 @@ export const AppUrls = {
         domain: apiUrlHost,
         saleorApiUrl: apiUrl,
         id: appId,
+        locale: localStorage.getItem("locale") || "en",
         ...params,
       },
       "comma",
